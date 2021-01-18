@@ -63,5 +63,8 @@
     "blacklist": [
       "/example/modal/basic/4"
     ]
+  },
+  "dependencies": {
+    "@anoram/leaflet-svelte": "0.0.7-0"
   }
 }
