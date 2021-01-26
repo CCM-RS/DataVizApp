@@ -1,0 +1,30 @@
+backend:
+  name: git-gateway
+
+slug:
+  encoding: "ascii"
+  clean_accents: true
+
+media_folder: "static/images/uploads"
+public_folder: "/images/uploads"
+
+collections:
+  - name: "project"
+    label: "Projeto"
+    folder: "static/data/entities/project"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - {label: "Título", name: "title", widget: "string"}
+      - {label: "Data de publicação", name: "date", widget: "datetime"}
+      - {label: "Localização", name: "location", widget: "map" }
+      - {label: "Foto principal", name: "image", widget: "image"}
+      - label: "Fotos"
+        name: "images"
+        widget: "image"
+        media_library:
+          config:
+            multiple: true
+      - {label: "Fase", name: "phase", widget: "string"}
+      - {label: "Resumo", name: "lede", widget: "text"}
+      - {label: "Descrição", name: "body", widget: "markdown"}

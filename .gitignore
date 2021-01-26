@@ -1,4 +1,5 @@
-/node_modules
 .DS_Store
+/node_modules/
+/src/node_modules/@sapper/
 yarn-error.log
-/.env
+/__sapper__/
