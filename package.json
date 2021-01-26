@@ -24,9 +24,10 @@
     "routify": "routify"
   },
   "devDependencies": {
+    "@anoram/leaflet-svelte": "0.0.7-0",
     "@rollup/plugin-commonjs": "^15.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
-    "@roxi/routify": "^2.5.1-next-major",
+    "@roxi/routify": "^2.8.5",
     "cross-env": "^7.0.2",
     "fs-extra": "^9.0.1",
     "nollup": "^0.13.13",
@@ -63,8 +64,5 @@
     "blacklist": [
       "/example/modal/basic/4"
     ]
-  },
-  "dependencies": {
-    "@anoram/leaflet-svelte": "0.0.7-0"
   }
 }

@@ -1,6 +1,6 @@
 
 (function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
-import { w as writable, S as SvelteComponentDev, i as init, s as safe_not_equal, d as dispatch_dev, v as validate_store, c as component_subscribe, a as validate_slots, l as createEventDispatcher, o as onMount, n as noop, e as element, b as space, m as create_component, f as attr_dev, g as add_location, h as insert_dev, p as mount_component, q as listen_dev, r as transition_in, x as transition_out, k as detach_dev, y as destroy_component, z as binding_callbacks, A as globals, B as metatags, t as text, j as append_dev, C as set_data_dev } from './main.js';
+import { w as writable, S as SvelteComponentDev, i as init, s as safe_not_equal, d as dispatch_dev, v as validate_store, c as component_subscribe, a as validate_slots, l as createEventDispatcher, o as onMount, n as noop, e as element, b as space, m as create_component, f as attr_dev, g as add_location, h as insert_dev, p as mount_component, q as listen_dev, r as transition_in, x as transition_out, k as detach_dev, y as destroy_component, z as binding_callbacks, A as globals, B as metatags } from './main.js';
 
 function loader (urls, test, callback) {
   let remaining = urls.length;
@@ -601,43 +601,38 @@ const file$1 = "src/pages/index.svelte";
 
 function create_fragment$2(ctx) {
 	let h1;
-	let t0_value = /*metatags*/ ctx[0].title + "";
-	let t0;
 	let t1;
 	let div;
 	let map;
 	let current;
 
 	map = new Leaflet({
-			props: { options: /*options*/ ctx[1] },
+			props: { options: /*options*/ ctx[0] },
 			$$inline: true
 		});
 
 	const block = {
 		c: function create() {
 			h1 = element("h1");
-			t0 = text(t0_value);
+			h1.textContent = "Projetos em fase avançada de licenciamento";
 			t1 = space();
 			div = element("div");
 			create_component(map.$$.fragment);
-			add_location(h1, file$1, 25, 0, 601);
+			add_location(h1, file$1, 25, 0, 602);
 			attr_dev(div, "class", "map svelte-1jnia5v");
-			add_location(div, file$1, 26, 0, 629);
+			add_location(div, file$1, 26, 0, 654);
 		},
 		l: function claim(nodes) {
 			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
 		},
 		m: function mount(target, anchor) {
 			insert_dev(target, h1, anchor);
-			append_dev(h1, t0);
 			insert_dev(target, t1, anchor);
 			insert_dev(target, div, anchor);
 			mount_component(map, div, null);
 			current = true;
 		},
-		p: function update(ctx, [dirty]) {
-			if ((!current || dirty & /*metatags*/ 1) && t0_value !== (t0_value = /*metatags*/ ctx[0].title + "")) set_data_dev(t0, t0_value);
-		},
+		p: noop,
 		i: function intro(local) {
 			if (current) return;
 			transition_in(map.$$.fragment, local);
@@ -687,14 +682,14 @@ function instance$2($$self, $$props, $$invalidate) {
 	$$self.$capture_state = () => ({ Map: Leaflet, metatags, options });
 
 	$$self.$inject_state = $$props => {
-		if ("options" in $$props) $$invalidate(1, options = $$props.options);
+		if ("options" in $$props) $$invalidate(0, options = $$props.options);
 	};
 
 	if ($$props && "$$inject" in $$props) {
 		$$self.$inject_state($$props.$$inject);
 	}
 
-	return [metatags, options];
+	return [options];
 }
 
 class Pages extends SvelteComponentDev {
@@ -710,7 +705,7 @@ class Pages extends SvelteComponentDev {
 		});
 	}
 }
-Pages.$compile = {"vars":[{"name":"Map","export_name":null,"injected":false,"module":false,"mutated":false,"reassigned":false,"referenced":true,"writable":false,"referenced_from_script":false},{"name":"metatags","export_name":null,"injected":false,"module":false,"mutated":true,"reassigned":false,"referenced":true,"writable":false,"referenced_from_script":true},{"name":"options","export_name":null,"injected":false,"module":false,"mutated":false,"reassigned":false,"referenced":true,"writable":true,"referenced_from_script":false}]};
+Pages.$compile = {"vars":[{"name":"Map","export_name":null,"injected":false,"module":false,"mutated":false,"reassigned":false,"referenced":true,"writable":false,"referenced_from_script":false},{"name":"metatags","export_name":null,"injected":false,"module":false,"mutated":true,"reassigned":false,"referenced":false,"writable":false,"referenced_from_script":true},{"name":"options","export_name":null,"injected":false,"module":false,"mutated":false,"reassigned":false,"referenced":true,"writable":true,"referenced_from_script":false}]};
 
 export default Pages;
 //# sourceMappingURL=index.js.map

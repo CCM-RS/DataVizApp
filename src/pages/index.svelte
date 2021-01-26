@@ -6,7 +6,7 @@
   metatags.description = 'O CCM/RS age pela garantia de realização de audiências públicas em todas as cidades envolvidas e pressionando para que a decisão final seja do povo gaúcho, através de plebiscitos.';
 
   let options = {
-    center: [13,80],
+    center: [13, 80],
     markers: [
       {
         lat: 13,
@@ -24,7 +24,7 @@
   }
 </style>
 
-<h1>{ metatags.title }</h1>
+<h1>Projetos em fase avançada de licenciamento</h1>
 <div class="map">
   <Map { options } />
 </div>
