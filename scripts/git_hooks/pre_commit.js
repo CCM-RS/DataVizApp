@@ -9,7 +9,7 @@
 const { exec } = require('child_process');
 
 exec(
-	"node scripts/precompile.js && git diff static --name-only",
+	"node scripts/precompile.js && git diff --name-only static",
 	(err, stdout, stderr) => {
 		if (err) {
 			console.log(stderr);
