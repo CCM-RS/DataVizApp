@@ -5,12 +5,34 @@ slug:
   encoding: "ascii"
   clean_accents: true
 
-media_folder: "static/images/uploads"
-public_folder: "/images/uploads"
+media_folder: "static/media"
+public_folder: "/media"
+
+locale: "pt"
 
 collections:
+  - label: "Configurações"
+    name: "config"
+    files:
+      - label: "Geral"
+        name: "globals"
+        file: "static/data/entities/config/globals.json"
+        fields:
+          - {label: "Nome do site", name: site_name, widget: string}
+          - label: "Idioma padrão"
+            name: "default_lang"
+            widget: "select"
+            options:
+              - { label: "Português", value: "pt" }
+              - { label: "Inglês", value: "en" }
+      - label: "Homepage"
+        name: "homepage"
+        file: "static/data/entities/config/homepage.json"
+        fields:
+          - {label: "Título", name: title, widget: string}
+          - {label: "Descrição", name: desc, widget: text}
   - name: "project"
-    label: "Projeto"
+    label: "Projetos"
     folder: "static/data/entities/project"
     create: true
     slug: "{{slug}}"
