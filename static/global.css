@@ -18,7 +18,7 @@
 :root,
 html {
 	--content-width: 60ch;
-	--content-bleed: calc((100vmin - var(--content-width)) / 2);
+	--content-bleed: calc((100vw - var(--content-width)) / 2);
 
 	--space-l: 1rem;
 	--space: .75rem;

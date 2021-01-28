@@ -3,8 +3,21 @@
 </script>
 
 <script>
+	import Map from "@anoram/leaflet-svelte";
 	import { getContext } from 'svelte';
+
 	const global_data = getContext('global_data');
+
+	let options={
+		center: [13,80],
+		markers: [
+			{
+				lat: 13,
+				lng: 80
+			}
+		],
+		mapID: "map"
+	};
 </script>
 
 <svelte:head>
@@ -22,3 +35,14 @@
 	<h1>{ homepage.title }</h1>
 	<p>{ homepage.desc }</p>
 </div>
+
+<div class="map-wrap">
+	<Map {options} />
+</div>
+
+<style>
+	.map-wrap {
+		width: auto;
+		min-height: 400px;
+	}
+</style>

@@ -87,6 +87,7 @@ const fetchKmzFile = filePath => {
  * Extracts the KMZ source file and transforms it to geoJson format.
  */
 const transformKmzFile = async filePath => {
+	/*
 	// Delete any potentially obsolete local unzipped copies (if they exist).
 	const filesToClean = ['private/doc.kml', 'private/legend0.png'];
 	filesToClean.forEach(f => {
@@ -107,6 +108,7 @@ const transformKmzFile = async filePath => {
 		console.error('Failed to unzip the KMZ file.', err);
 		return false;
 	}
+	*/
 
 	// Transform to GeoJson format.
 	const kml = new DOMParser().parseFromString(fs.readFileSync('private/doc.kml', 'utf8'));
@@ -116,10 +118,25 @@ const transformKmzFile = async filePath => {
 	}
 
 	const converted = tj.kml(kml);
-	if (!converted) {
+	if (!converted || !('features' in converted)) {
 		console.error('Failed to convert KML file.', err);
 		return false;
 	}
+
+	// debug.
+	// console.log(Object.keys(converted));
+
+	// Filter features properties.
+	const propertiesWhiteList = ['name', 'stroke', 'stroke-width', 'fill'];
+	converted.features.forEach(feature => {
+		const newProps = {};
+		propertiesWhiteList.forEach(key => {
+			if (key in feature.properties) {
+				newProps[key] = feature.properties[key];
+			}
+		});
+		feature.properties = newProps;
+	});
 
 	// Remove potentially obsolete cached processed file.
 	if (fs.existsSync('static/data/cache/geo/RS.json')) {
