@@ -81,13 +81,12 @@ const fetchKmzFile = filePath => {
 	});
 
 	return fileHasBeenUpdated;
-}
+};
 
 /**
- * Extracts the KMZ source file and transforms it to geoJson format.
+ * Extracts the KMZ source file.
  */
-const transformKmzFile = async filePath => {
-	/*
+const extractKmzFile = async filePath => {
 	// Delete any potentially obsolete local unzipped copies (if they exist).
 	const filesToClean = ['private/doc.kml', 'private/legend0.png'];
 	filesToClean.forEach(f => {
@@ -95,6 +94,7 @@ const transformKmzFile = async filePath => {
 			fs.unlink(f, err => {
 				if (err) {
 					console.error(`Failed to remove the old '${f}' local copy.`, err);
+					return false;
 				}
 			});
 		}
@@ -108,9 +108,14 @@ const transformKmzFile = async filePath => {
 		console.error('Failed to unzip the KMZ file.', err);
 		return false;
 	}
-	*/
 
-	// Transform to GeoJson format.
+	return true;
+};
+
+/**
+ * Transforms it to geoJson format.
+ */
+const transformKmzFile = async filePath => {
 	const kml = new DOMParser().parseFromString(fs.readFileSync('private/doc.kml', 'utf8'));
 	if (!kml) {
 		console.error('Failed to parse KML file.', err);
@@ -128,13 +133,24 @@ const transformKmzFile = async filePath => {
 
 	// Filter features properties.
 	const propertiesWhiteList = ['name', 'stroke', 'stroke-width', 'fill'];
-	converted.features.forEach(feature => {
+
+
+	// Debug : only keep a few random shapes to test.
+	for (let i = converted.features.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[converted.features[i], converted.features[j]] = [converted.features[j], converted.features[i]];
+	}
+	converted.features.splice(0, converted.features.length - 300);
+
+
+	converted.features.forEach((feature, i) => {
 		const newProps = {};
 		propertiesWhiteList.forEach(key => {
 			if (key in feature.properties) {
 				newProps[key] = feature.properties[key];
 			}
 		});
+
 		feature.properties = newProps;
 	});
 
@@ -150,9 +166,12 @@ const transformKmzFile = async filePath => {
 	await write_file('static/data/cache/geo/RS.json', JSON.stringify(converted));
 }
 
+
 // Debug (WIP test local).
 // if (fetchKmzFile(rsKmzFilePath)) {
-// 	await transformKmzFile(rsKmzFilePath);
+// 	if (await extractKmzFile(rsKmzFilePath)) {
+// 		await transformKmzFile(rsKmzFilePath);
+// 	}
 // }
 
 // transformKmzFile(rsKmzFilePath);

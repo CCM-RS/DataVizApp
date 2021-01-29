@@ -5,4 +5,3 @@ yarn-error.log
 /__sapper__/
 /private/*
 !/private/README.md
-static/data/cache/geo

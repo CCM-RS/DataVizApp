@@ -29,7 +29,6 @@
 </svelte:head>
 
 <h1 class="full-vw">{ homepage.title }</h1>
-<p>{ homepage.desc }</p>
 
 <div class="map-wrap full-vw">
 	<!-- Workaround : a dependency is using a direct reference to window. -->

@@ -9,16 +9,18 @@
 	import Polyline from './Polyline.svelte';
 	import MapToolbar from './MapToolbar.svelte';
 
+	// Debug.
+	import GeoJson from './GeoJson.svelte';
+
+	// import L from 'leaflet';
+
 	let map;
 
 	const markerLocations = [
-		[29.8283, -96.5795],
-		[37.8283, -90.5795],
-		[43.8283, -102.5795],
-		[48.40, -122.5795],
-		[43.60, -79.5795],
-		[36.8283, -100.5795],
-		[38.40, -122.5795],
+		[-30.020949, -51.4108658],
+		[-30.9776091, -52.6464844],
+		[-29.1521613, -54.1845703],
+		[-28.3430649, -51.4160156],
 	];
 
 	const lines = markerLocations.slice(1).map((latLng, i) => {
@@ -29,7 +31,8 @@
 		}
 	});
 
-	const initialView = [39.8283, -98.5795];
+	// const initialView = [39.8283, -98.5795];
+	const initialView = [-30.020949, -51.4108658];
 
 	let eye = true;
 	let showLines = true;
@@ -41,7 +44,7 @@
   }
 
 	function resetMapView() {
-		map.setView(initialView, 5);
+		map.setView(initialView, 7);
 	}
 </script>
 
@@ -51,7 +54,7 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
 </svelte:head> -->
 
-<Leaflet bind:map view={initialView} zoom={4}>
+<Leaflet bind:map view={initialView} zoom={6}>
 	<Control position="topright">
 		<MapToolbar bind:eye bind:lines={showLines} on:click-reset={resetMapView} />
 	</Control>
@@ -59,7 +62,7 @@
 	{#if eye}
 		{#each markerLocations as latLng}
 			<Marker {latLng} width={30} height={30}>
-				<svg style="width:30px;height:30px" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+				<svg style="width:30px;height:30px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12 9v2m0 4h.01"></path></svg>
 				<Popup>A popup!</Popup>
 			</Marker>
 		{/each}
@@ -70,4 +73,8 @@
 			<Polyline {latLngs} {color} opacity={0.5} />
 		{/each}
 	{/if}
+
+	<!-- Debug. -->
+	<GeoJson />
+
 </Leaflet>
