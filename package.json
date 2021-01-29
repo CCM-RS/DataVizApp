@@ -26,6 +26,7 @@
     "@rollup/plugin-node-resolve": "^8.0.0",
     "@rollup/plugin-replace": "^2.2.0",
     "@rollup/plugin-url": "^5.0.0",
+    "@sindresorhus/slugify": "^1.1.0",
     "extract-zip": "^2.0.1",
     "husky": "^4.3.8",
     "just-flush": "^1.1.0",

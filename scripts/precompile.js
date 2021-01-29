@@ -17,6 +17,7 @@ const tj = require('@mapbox/togeojson');
 const { DOMParser } = require('xmldom');
 const extract = require('extract-zip');
 const { write_file } = require('./lib/fs.js');
+const slugify = require('@sindresorhus/slugify');
 
 const rsKmzFilePath = 'private/RS.kmz';
 
@@ -116,13 +117,25 @@ const extractKmzFile = async filePath => {
  * Transforms it to geoJson format.
  */
 const transformKmzFile = async filePath => {
-	const kml = new DOMParser().parseFromString(fs.readFileSync('private/doc.kml', 'utf8'));
+	let i;
+	const parsedProjects = [];
+	const parser = new DOMParser({
+		locator: {},
+		errorHandler: {
+			warning: w => {},
+			error: e => {},
+			fatalError: e => console.error(e)
+		}
+	});
+	const kml = parser.parseFromString(fs.readFileSync('private/doc.kml', 'utf8'));
+
 	if (!kml) {
 		console.error('Failed to parse KML file.', err);
 		return false;
 	}
 
 	const converted = tj.kml(kml);
+
 	if (!converted || !('features' in converted)) {
 		console.error('Failed to convert KML file.', err);
 		return false;
@@ -134,23 +147,67 @@ const transformKmzFile = async filePath => {
 	// Filter features properties.
 	const propertiesWhiteList = ['name', 'stroke', 'stroke-width', 'fill'];
 
-
 	// Debug : only keep a few random shapes to test.
-	for (let i = converted.features.length - 1; i > 0; i--) {
+	for (i = converted.features.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
 		[converted.features[i], converted.features[j]] = [converted.features[j], converted.features[i]];
 	}
 	converted.features.splice(0, converted.features.length - 300);
 
-
 	converted.features.forEach((feature, i) => {
+		const project = {};
 		const newProps = {};
+
 		propertiesWhiteList.forEach(key => {
 			if (key in feature.properties) {
 				newProps[key] = feature.properties[key];
 			}
 		});
 
+		// Extract data from description property.
+		if ('description' in feature.properties && feature.properties.description.length) {
+			const document = parser.parseFromString(feature.properties.description);
+
+			if (!document) {
+				return;
+			}
+
+			Array.from(document.getElementsByTagName("tr")).forEach((row, i) => {
+				if (i < 2) {
+					return;
+				}
+
+				let key = '';
+				let val = '';
+
+				for (let j = 0; j < row.childNodes.length; j++) {
+					const textContent = row.childNodes[j].textContent.trim();
+
+					if (textContent.length) {
+						// Debug.
+						// console.log(`${i}.${j} : ${textContent}`);
+
+						if (j === 1) {
+							key = textContent;
+						} else {
+							val = textContent;
+						}
+					}
+				}
+
+				if (key.length) {
+					project[slugify(key)] = val;
+				}
+			});
+		}
+
+		// Store parsed project data.
+		parsedProjects.push(project);
+
+		// Debug.
+		// console.log(project);
+
+		// Prune non-geographical data for GeoJson cached storage.
 		feature.properties = newProps;
 	});
 
@@ -163,6 +220,10 @@ const transformKmzFile = async filePath => {
 		});
 	}
 
+	// Write parsed projects data.
+	await write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects: parsedProjects }));
+
+	// Write GeoJson cached storage file.
 	await write_file('static/data/cache/geo/RS.json', JSON.stringify(converted));
 }
 
