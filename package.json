@@ -14,7 +14,6 @@
     "sirv": "^1.0.0"
   },
   "devDependencies": {
-    "@anoram/leaflet-svelte": "0.0.7-0",
     "@babel/core": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.0.0",
@@ -29,6 +28,8 @@
     "@rollup/plugin-url": "^5.0.0",
     "extract-zip": "^2.0.1",
     "husky": "^4.3.8",
+    "just-flush": "^1.1.0",
+    "leaflet": "^1.7.1",
     "mkdirp": "^1.0.4",
     "rollup": "^2.3.4",
     "rollup-plugin-svelte": "^7.0.0",

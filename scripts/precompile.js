@@ -155,4 +155,4 @@ const transformKmzFile = async filePath => {
 // 	await transformKmzFile(rsKmzFilePath);
 // }
 
-transformKmzFile(rsKmzFilePath);
+// transformKmzFile(rsKmzFilePath);
