@@ -152,7 +152,7 @@ const transformKmzFile = async filePath => {
 		const j = Math.floor(Math.random() * (i + 1));
 		[converted.features[i], converted.features[j]] = [converted.features[j], converted.features[i]];
 	}
-	converted.features.splice(0, converted.features.length - 300);
+	converted.features.splice(0, converted.features.length - 500);
 
 	converted.features.forEach((feature, i) => {
 		const project = {};

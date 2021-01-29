@@ -1,12 +1,12 @@
 <script context="module">
-	import * as homepage from '../../static/data/entities/config/homepage.json'
+	import * as homepage from '../../static/data/entities/config/homepage.json';
 </script>
 
 <script>
 	// Workaround : a dependency is using a direct reference to window.
 	// import Map from "../components/Map.svelte";
 	import { getContext } from 'svelte';
-	import { onMount } from 'svelte'
+	import { onMount } from 'svelte';
 
 	const global_data = getContext('global_data');
 
@@ -29,6 +29,7 @@
 </svelte:head>
 
 <h1 class="full-vw">{ homepage.title }</h1>
+<p><a href="/detalhes">→ Detalhes + filtros (WIP)</a></p>
 
 <div class="map-wrap full-vw">
 	<!-- Workaround : a dependency is using a direct reference to window. -->
@@ -46,6 +47,7 @@
 	}
 	.map-wrap {
 		position: relative;
+		margin-top: 1rem;
 		flex-grow: 1;
 	}
 	:global(.map-wrap > *) {
