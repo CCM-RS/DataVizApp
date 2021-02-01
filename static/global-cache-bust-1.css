@@ -6,10 +6,10 @@
 /* Brutal reset */
 
 * {
+	box-sizing: border-box;
 	border: 0 none;
 	margin: 0;
 	padding: 0;
-	box-sizing: border-box;
 }
 
 
@@ -89,6 +89,18 @@ a.is-active {
 	color: cornflowerblue;
 }
 
+button {
+	font-size: inherit;
+	font-weight: inherit;
+	background: none;
+	cursor: pointer;
+}
+button:focus,
+button:hover,
+button.is-active {
+	color: cornflowerblue;
+}
+
 hr {
 	border: 0;
 	height: 1px;
@@ -108,7 +120,7 @@ table {
 }
 th,
 td {
-	padding: calc(var(--space-s) / 2);
+	padding: calc(var(--space-s) / 2) var(--space-s);
 }
 td {
 	border-top: 1px solid grey;
@@ -117,6 +129,7 @@ th {
 	position: sticky;
 	top: 0;
 	background-color: white;
+	font-weight: normal;
 }
 
 blockquote {

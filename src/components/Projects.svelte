@@ -85,7 +85,6 @@
 				let allFilterValuesMatch = true;
 
 				selectedFilterItems.forEach(selectedFilterItem => {
-					// Emojis are arrays of objects.
 					if (!(selectedFilterItem.key in result) || !result[selectedFilterItem.key].includes(selectedFilterItem.value)) {
 						allFilterValuesMatch = false;
 					}
@@ -157,9 +156,14 @@
 	 * Inverts order if already active.
 	 */
 	const sortBy = (e, key) => {
-		const isOff = e.target.classList.contains('is-off');
-		const isAsc = e.target.classList.contains('is-asc');
-		const isDesc = e.target.classList.contains('is-desc');
+		let btn = e.target;
+		if (e.target.tagName !== 'BUTTON') {
+			btn = e.target.closest('button');
+		}
+
+		const isOff = btn.classList.contains('is-off');
+		const isAsc = btn.classList.contains('is-asc');
+		const isDesc = btn.classList.contains('is-desc');
 
 		let newState;
 
@@ -173,6 +177,7 @@
 					newState = 'is-asc';
 				}
 				break;
+
 			default:
 				if (isOff || isDesc) {
 					documents.sort((a, b) => getDocValOr(a, key, 'z').localeCompare(getDocValOr(b, key, 'z')));
@@ -199,14 +204,18 @@
 			}
 		}
 
-		// Sync sort links state.
-		const allSortLinks = Array.from(e.target.closest('thead').querySelectorAll('.sort'));
+		// Sync sort links state classes.
+		const allSortLinks = Array.from(btn.closest('thead').querySelectorAll('.sort'));
+
 		allSortLinks.forEach(sortLink => {
 			sortLink.classList.remove('is-asc', 'is-desc');
 			sortLink.classList.add('is-off');
+			sortLink.closest('th').classList.remove('is-active');
 		});
-		e.target.classList.remove('is-off');
-		e.target.classList.add(newState);
+
+		btn.classList.remove('is-off');
+		btn.classList.add(newState);
+		btn.closest('th').classList.add('is-active');
 	};
 </script>
 
@@ -247,61 +256,61 @@
 <div class="full-vw">
 	<table>
 		<thead>
-			<th>
-				<a class="sort is-desc" on:click={e => sortBy(e, 'ano')} title="Sort by year">
+			<th class="is-active">
+				<button class="sort is-desc" on:click={e => sortBy(e, 'ano')} title="Sort by year">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Ano
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'fase')} title="Sort by phase">
+				<button class="sort is-off" on:click={e => sortBy(e, 'fase')} title="Sort by phase">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Fase
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'area-ha')} title="Sort by Area (ha)">
+				<button class="sort is-off" on:click={e => sortBy(e, 'area-ha')} title="Sort by Area (ha)">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Area (ha)
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'processo')} title="Sort by process">
+				<button class="sort is-off" on:click={e => sortBy(e, 'processo')} title="Sort by process">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Processo
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'ultimo-evento')} title="Sort by last event">
+				<button class="sort is-off" on:click={e => sortBy(e, 'ultimo-evento')} title="Sort by last event">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Ultimo Evento
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'titular')} title="Sort by titular">
+				<button class="sort is-off" on:click={e => sortBy(e, 'titular')} title="Sort by titular">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Titular
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'substancia')} title="Sort by substance">
+				<button class="sort is-off" on:click={e => sortBy(e, 'substancia')} title="Sort by substance">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Substancia
-				</a>
+				</button>
 			</th>
 			<th>
-				<a class="sort is-off" on:click={e => sortBy(e, 'uso')} title="Sort by usage">
+				<button class="sort is-off" on:click={e => sortBy(e, 'uso')} title="Sort by usage">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Uso
-				</a>
+				</button>
 			</th>
 		</thead>
 		<tbody>
@@ -365,17 +374,29 @@
 		display: flex;
 		cursor: pointer;
 	}
-	.sort > span{
+	.sort > span {
 		padding-right: var(--space-s);
 	}
-	.sort.is-off .is-asc,
-	.sort.is-off .is-desc {
+	:global(
+		table .sort.is-off .is-asc,
+		table .sort.is-off .is-desc
+	) {
 		display: none;
 	}
-	:global(.sort.is-asc .is-desc) {
+	:global(table .sort.is-asc .is-desc) {
 		display: none;
 	}
-	.sort.is-desc .is-asc {
+	:global(table .sort.is-desc .is-asc) {
 		display: none;
+	}
+	/* th:hover,
+	th:focus, */
+	:global(table th.is-active) {
+		background-color: cornflowerblue;
+		color: white;
+		font-weight: bold;
+	}
+	:global(table th.is-active button) {
+		color: inherit;
 	}
 </style>
