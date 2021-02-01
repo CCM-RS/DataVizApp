@@ -1,3 +1,8 @@
+<script context="module">
+	// By default, show only projects of "advanced" phases.
+	// import * as advancedProjects from '../../static/data/cache/projects/by-phase/1-2-3.json';
+</script>
+
 <script>
 	/**
 	 * See https://imfeld.dev/writing/domless_svelte_component
@@ -10,7 +15,7 @@
 	import MapToolbar from './MapToolbar.svelte';
 
 	// Debug.
-	import GeoJson from './GeoJson.svelte';
+	// import GeoJson from './GeoJson.svelte';
 
 	// import L from 'leaflet';
 
@@ -75,6 +80,6 @@
 	{/if}
 
 	<!-- Debug. -->
-	<GeoJson />
+	<!-- <GeoJson /> -->
 
 </Leaflet>

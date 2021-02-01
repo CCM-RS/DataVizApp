@@ -32,6 +32,7 @@
     "husky": "^4.3.8",
     "just-flush": "^1.1.0",
     "leaflet": "^1.7.1",
+    "martinez-polygon-clipping": "^0.7.0",
     "mkdirp": "^1.0.4",
     "rollup": "^2.3.4",
     "rollup-plugin-svelte": "^7.0.0",

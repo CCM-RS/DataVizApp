@@ -1,6 +1,6 @@
 /**
  * @file
- * Updates local copy of KMZ geo data from Sigmine, then parses and converts it.
+ * Updates local copy of KMZ geo data from Sigmine, then converts and parses it.
  *
  * See https://www.gov.br/anm/pt-br/assuntos/acesso-a-sistemas/sistema-de-informacoes-geograficas-da-mineracao-sigmine
  */
@@ -14,13 +14,33 @@ const { DOMParser } = require('xmldom');
 const extract = require('extract-zip');
 const { write_file } = require('./fs.js');
 const slugify = require('@sindresorhus/slugify');
+const polyclip = require('martinez-polygon-clipping');
 
 // Settings.
 const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
 const rsKmzFilePath = 'private/RS.kmz';
 const kmzLocalCopyAgeLimit = 1000 * 60 * 60 * 24 * 31;
 const rsRawGeoJsonFilePath = 'static/data/cache/raw_geo.json';
-const debugCapItems = 10;
+
+// Will restrict parsed items to X items.
+// 0 = parse everything (~11.6K entries).
+const debugCapItems = 50;
+
+// TODO mutualize this map for rendering in Svelte.
+const phasesMap = {
+	autorizacao_de_pesquisa: 1,
+	direito_de_requerer_a_lavra: 2,
+	licenciamento: 3,
+	lavra_garimpeira: 4,
+	disponibilidade: 5,
+	requerimento_de_licenciamento: 6,
+	requerimento_de_pesquisa: 7,
+	requerimento_de_lavra: 8,
+	registro_de_extracao: 9,
+	concessao_de_lavra: 10,
+	requerimento_de_lavra_garimpeira: 11,
+	requerimento_de_registro_de_extracao: 12
+};
 
 // Shared instance of the DOM parser.
 const parser = new DOMParser({
@@ -180,63 +200,6 @@ const transformKmzFileToGeoJson = async () => {
 };
 
 /**
- * Extracts structured data from the GeoJson object.
- */
-const extractGeoJsonData = async converted => {
-	if (!converted) {
-		converted = await transformKmzFileToGeoJson();
-	}
-
-	// Debug.
-	// console.log(converted);
-
-	let i;
-	let j;
-	const parsedProjects = [];
-	const projectsByPhase = [];
-	const projectsByMunicipality = [];
-
-	// debug.
-	// console.log(Object.keys(converted));
-
-	// Filter features properties.
-	const propertiesWhiteList = ['name', 'stroke', 'stroke-width', 'fill'];
-
-	converted.features.forEach((feature, i) => {
-		// Extract data from description property and store parsed project data.
-		const project = parseGeoJsonDesc(feature);
-		if (project) {
-			parsedProjects.push(project);
-		}
-
-		// Sort by default on 'modified' key.
-		parsedProjects.sort((a, b) => b.modified.localeCompare(a.modified));
-
-		// Debug.
-		console.log(project);
-
-		// Prune non-geographical data for GeoJson cached storage.
-		const newProps = {};
-		propertiesWhiteList.forEach(key => {
-			if (key in feature.properties) {
-				newProps[key] = feature.properties[key];
-			}
-		});
-		feature.properties = newProps;
-	});
-
-	// Write parsed projects data.
-	await write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects: parsedProjects }));
-
-	// Remove potentially obsolete cached processed file.
-	if (fs.existsSync('static/data/cache/geo/RS.json')) {
-		fs.unlinkSync('static/data/cache/geo/RS.json');
-	}
-	// Write GeoJson cached storage file.
-	await write_file('static/data/cache/geo/RS.json', JSON.stringify(converted));
-}
-
-/**
  * Parses the description property from the raw GeoJson data.
  *
  * @param {Object} feature : a single feature object from the GeoJson raw data.
@@ -307,21 +270,134 @@ const parseGeoJsonDesc = feature => {
  */
 const extractDateFromString = str => {
 	const matches = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-	console.log(matches);
 	return `${matches[3]}/${matches[2]}/${matches[1]}`;
 }
 
 /**
  * Distributes projects by municipality.
  *
- * (Over)Writes Svelte routes corresponding to each municipality.
+ * TODO check all projects belong to at least 1 municipality ?
+ * TODO (Over)Writes dynamically generated Svelte routes for each municipality ?
  *
  * @param {Array} projects : extracted data for all projects.
  * @returns {Object} projects keyed by slug of municipalities.
  */
-const arrangeByMunicipality = async projects => {
-	// Debug.
-	console.log(projects);
+const arrangeByMunicipality = projects => {
+	const projectsByMunicipality = {};
+	const municipalities = fs.readJsonSync('static/data/geo/geojs-43-mun.json');
+
+	municipalities.features.forEach(municipality => {
+		projects.forEach(project => {
+			if (polyclip.intersection(project.geometry.coordinates, municipality.geometry.coordinates)) {
+				const cleanKey = slugify(municipality.properties.name, { separator: '_' });
+
+				if (!(cleanKey in projectsByMunicipality)) {
+					projectsByMunicipality[cleanKey] = [];
+				}
+
+				projectsByMunicipality[cleanKey].push(project);
+			}
+		});
+	});
+
+	return projectsByMunicipality;
+}
+
+/**
+ * Distributes projects by phases.
+ *
+ * @param {Array} projects : extracted data for all projects.
+ * @returns {Object} projects keyed by phase, and as many phase as there are
+ * 	combinations of up to 4 phases.
+ */
+const arrangeByPhases = projects => {
+	const projectsByPhases = {};
+	const phases = [];
+
+	projects.forEach(project => {
+		const cleanKey = slugify(project.fase, { separator: '_' });
+
+		// Can't deal with missing data here.
+		if (!cleanKey || !cleanKey.length) {
+			return;
+		}
+
+		if (!(cleanKey in projectsByPhases)) {
+			projectsByPhases[cleanKey] = [];
+		}
+		projectsByPhases[cleanKey].push(project);
+
+		// Populate array of distinct phase "clean" values.
+		if (!(cleanKey in phasesMap)) {
+			console.log(`Missing key in phasesMap : ${cleanKey}`);
+		} else {
+			if (phases.includes(phasesMap[cleanKey])) {
+				return;
+			}
+			phases.push(phasesMap[cleanKey]);
+		}
+	});
+
+	// TODO Do the combinations ?
+	// console.log(phases);
+
+	return projectsByPhases;
+}
+
+/**
+ * Extracts structured data from the GeoJson object.
+ */
+const extractGeoJsonData = async converted => {
+	if (!converted) {
+		converted = await transformKmzFileToGeoJson();
+	}
+
+	let i;
+	let j;
+	const projects = [];
+	const promises = [];
+
+	// Extract data from description property and store parsed project data.
+	converted.features.forEach((feature, i) => {
+		const project = parseGeoJsonDesc(feature);
+		if (project) {
+			projects.push(project);
+		}
+	});
+
+	// Sort by default on 'modified' date key (desc).
+	projects.sort((a, b) => b.modified.localeCompare(a.modified));
+
+	// Write parsed projects data (all projects ~ 11.6K unles debugCapItems
+	// setting is used).
+	promises.push(
+		write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects }))
+	);
+
+	// Write 1 file per municipality.
+	const projectsByMunicipality = arrangeByMunicipality(projects);
+	Object.keys(projectsByMunicipality).forEach(cleanKey => {
+		promises.push(
+			write_file(
+				`static/data/cache/projects/by-municipality/${cleanKey}.json`,
+				JSON.stringify({ projects: projectsByMunicipality[cleanKey] })
+			)
+		);
+	});
+
+	// Writes 1 file per phase, and as many files as there are combinations of up
+	// to 4 phases.
+	const projectsByPhases = arrangeByPhases(projects);
+	Object.keys(projectsByPhases).forEach(cleanKey => {
+		promises.push(
+			write_file(
+				`static/data/cache/projects/by-phase/${cleanKey}.json`,
+				JSON.stringify({ projects: projectsByPhases[cleanKey] })
+			)
+		);
+	});
+
+	await Promise.all(promises);
 }
 
 /**
@@ -331,7 +407,7 @@ const updateKmzData = async projects => {
 	if (fetchKmzFile()) {
 		await unzipKmzFile();
 	}
-	extractGeoJsonData();
+	await extractGeoJsonData();
 }
 
 module.exports = {
