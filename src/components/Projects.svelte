@@ -13,7 +13,7 @@
 
 	let selectItems = [];
 
-	const multiSelectSearchesInKeys = ['fase', 'titular', 'substancia', 'uso'];
+	const multiSelectSearchesInKeys = ['fase', 'titular', 'substancia', 'uso', 'municipality'];
 	let filterOp = 'and';
 	let selectedFilterItems;
 
@@ -263,6 +263,13 @@
 					Ano
 				</button>
 			</th> -->
+			<th>
+				<button class="sort is-off" on:click={e => sortBy(e, 'municipality')} title="Ordenar por Municipio">
+					<span class="is-asc">↑</span>
+					<span class="is-desc">↓</span>
+					Municipio
+				</button>
+			</th>
 			<th class="is-active">
 				<button class="sort is-desc" on:click={e => sortBy(e, 'modified')} title="Ordenar por Data do Ultimo Evento">
 					<span class="is-asc">↑</span>
@@ -324,6 +331,7 @@
 		{#each $documentsStore as doc, i}
 			<tr>
 				<!-- <td>{ doc.ano || '' }</td> -->
+				<td>{ doc.municipality || '' }</td>
 				<td>{ doc.modified || '' }</td>
 				<td>{ doc.fase || '' }</td>
 				<td>{ doc.area_ha || '' }</td>

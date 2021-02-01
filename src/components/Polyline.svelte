@@ -30,10 +30,22 @@
 	const dispatch = createEventDispatcher();
 
 	let layerPane = pane || getContext('pane');
-  let layerGroup = getContext('layerGroup')();
+	let layerGroup = getContext('layerGroup')();
+
+	// Invert long, lat.
+	const invertLongLat = ll => {
+		if (Array.isArray(ll[0][0])) {
+			return ll.map(a => invertLongLat(a));
+		} else {
+			ll.forEach((coords, i) => {
+				ll[i] = [coords[1], coords[0]];
+			});
+		}
+		return ll;
+	};
 
   export let line = new L.Polyline(
-    latLngs,
+    invertLongLat(latLngs),
     flush({
       interactive,
       className,

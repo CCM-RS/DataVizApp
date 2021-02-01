@@ -24,7 +24,7 @@ const rsRawGeoJsonFilePath = 'static/data/cache/raw_geo.json';
 
 // Will restrict parsed items to X items.
 // 0 = parse everything (~11.6K entries).
-const debugCapItems = 50;
+const debugCapItems = 500;
 
 // TODO mutualize this map for rendering in Svelte.
 const phasesMap = {
@@ -291,6 +291,9 @@ const arrangeByMunicipality = projects => {
 			if (polyclip.intersection(project.geometry.coordinates, municipality.geometry.coordinates)) {
 				const cleanKey = slugify(municipality.properties.name, { separator: '_' });
 
+				// Alter the projects reference to implement mucupality as a filter.
+				project.municipality = municipality.properties.name;
+
 				if (!(cleanKey in projectsByMunicipality)) {
 					projectsByMunicipality[cleanKey] = [];
 				}
@@ -368,12 +371,6 @@ const extractGeoJsonData = async converted => {
 	// Sort by default on 'modified' date key (desc).
 	projects.sort((a, b) => b.modified.localeCompare(a.modified));
 
-	// Write parsed projects data (all projects ~ 11.6K unles debugCapItems
-	// setting is used).
-	promises.push(
-		write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects }))
-	);
-
 	// Write 1 file per municipality.
 	const projectsByMunicipality = arrangeByMunicipality(projects);
 	Object.keys(projectsByMunicipality).forEach(cleanKey => {
@@ -385,8 +382,9 @@ const extractGeoJsonData = async converted => {
 		);
 	});
 
-	// Writes 1 file per phase, and as many files as there are combinations of up
-	// to 4 phases.
+	// Writes 1 file per phase.
+	// TODO combinations of phase ?
+	// (e.g. the file for phase 1 OR 4 OR 12 would be "phases-1-4-12.json")
 	const projectsByPhases = arrangeByPhases(projects);
 	Object.keys(projectsByPhases).forEach(cleanKey => {
 		promises.push(
@@ -396,6 +394,12 @@ const extractGeoJsonData = async converted => {
 			)
 		);
 	});
+
+	// Write parsed projects data (all projects ~ 11.6K unles debugCapItems
+	// setting is used).
+	promises.push(
+		write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects }))
+	);
 
 	await Promise.all(promises);
 }

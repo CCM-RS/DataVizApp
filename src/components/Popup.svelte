@@ -40,7 +40,18 @@
 <div class="hidden">
   <div use:createPopup class={classNames}>
     {#if showContents}
-      <slot />
+      <div class="inner-wrap">
+				<slot />
+			</div>
     {/if}
   </div>
 </div>
+
+<style>
+	.inner-wrap {
+		width: 55ch;
+	}
+	:global(.leaflet-popup-content) {
+		min-width: 55ch;
+	}
+</style>

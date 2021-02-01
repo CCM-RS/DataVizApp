@@ -1,5 +1,12 @@
 <script context="module">
 	import * as homepage from '../../static/data/entities/config/homepage.json';
+
+	// TODO By default, show only projects of "advanced" phases.
+	// import * as advancedProjects from '../../static/data/cache/projects/by-phase/phases-1-2-3.json';
+
+	// Debug : show all projects (test subset).
+	// @see scripts/lib/kmz_process.js
+	import * as projectsData from '../../static/data/cache/parsed-projects.json';
 </script>
 
 <script>
@@ -31,11 +38,15 @@
 <h1 class="full-vw">{ homepage.title }</h1>
 <p><a href="/detalhes">→ Detalhes + filtros (WIP)</a></p>
 
+<!-- {#each projectsData.projects as project}
+	<pre>project = {project}</pre>
+{/each} -->
+
 <div class="map-wrap full-vw">
 	<!-- Workaround : a dependency is using a direct reference to window. -->
 	{#if mounted}
 		{#await import("../components/Map.svelte") then m}
-			<svelte:component this="{m.default}" />
+			<svelte:component this="{m.default}" projects={projectsData.projects} />
 		{/await}
 	{/if}
 </div>
