@@ -256,74 +256,82 @@
 <div class="full-vw">
 	<table>
 		<thead>
-			<th class="is-active">
-				<button class="sort is-desc" on:click={e => sortBy(e, 'ano')} title="Sort by year">
+			<!-- <th>
+				<button class="sort is-off" on:click={e => sortBy(e, 'ano')} title="Ordenar por Ano">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Ano
 				</button>
+			</th> -->
+			<th class="is-active">
+				<button class="sort is-desc" on:click={e => sortBy(e, 'modified')} title="Ordenar por Data do Ultimo Evento">
+					<span class="is-asc">↑</span>
+					<span class="is-desc">↓</span>
+					Modificado
+				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'fase')} title="Sort by phase">
+				<button class="sort is-off" on:click={e => sortBy(e, 'fase')} title="Ordenar por Fase">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Fase
 				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'area-ha')} title="Sort by Area (ha)">
+				<button class="sort is-off" on:click={e => sortBy(e, 'area_ha')} title="Ordenar por Area (ha)">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Area (ha)
 				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'processo')} title="Sort by process">
-					<span class="is-asc">↑</span>
-					<span class="is-desc">↓</span>
-					Processo
-				</button>
-			</th>
-			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'ultimo-evento')} title="Sort by last event">
+				<button class="sort is-off" on:click={e => sortBy(e, 'ultimo_evento')} title="Ordenar por Ultimo Evento">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Ultimo Evento
 				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'titular')} title="Sort by titular">
+				<button class="sort is-off" on:click={e => sortBy(e, 'titular')} title="Ordenar por Titular">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Titular
 				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'substancia')} title="Sort by substance">
+				<button class="sort is-off" on:click={e => sortBy(e, 'substancia')} title="Ordenar por Substancia">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Substancia
 				</button>
 			</th>
 			<th>
-				<button class="sort is-off" on:click={e => sortBy(e, 'uso')} title="Sort by usage">
+				<button class="sort is-off" on:click={e => sortBy(e, 'uso')} title="Ordenar por Uso">
 					<span class="is-asc">↑</span>
 					<span class="is-desc">↓</span>
 					Uso
+				</button>
+			</th>
+			<th>
+				<button class="sort is-off" on:click={e => sortBy(e, 'processo')} title="Ordenar por Processo">
+					<span class="is-asc">↑</span>
+					<span class="is-desc">↓</span>
+					Processo
 				</button>
 			</th>
 		</thead>
 		<tbody>
 		{#each $documentsStore as doc, i}
 			<tr>
-				<td>{ doc.ano || '' }</td>
+				<!-- <td>{ doc.ano || '' }</td> -->
+				<td>{ doc.modified || '' }</td>
 				<td>{ doc.fase || '' }</td>
-				<td>{ doc['area-ha'] || '' }</td>
-				<td>{ doc.processo || '' }</td>
-				<td>{ doc['ultimo-evento'] || '' }</td>
+				<td>{ doc.area_ha || '' }</td>
+				<td>{ doc.ultimo_evento || '' }</td>
 				<td>{ doc.titular || '' }</td>
 				<td>{ doc.substancia || '' }</td>
 				<td>{ doc.uso || '' }</td>
+				<td>{ doc.processo || '' }</td>
 			</tr>
 		{/each}
 		</tbody>

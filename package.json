@@ -28,6 +28,7 @@
     "@rollup/plugin-url": "^5.0.0",
     "@sindresorhus/slugify": "^1.1.0",
     "extract-zip": "^2.0.1",
+    "fs-extra": "^9.1.0",
     "husky": "^4.3.8",
     "just-flush": "^1.1.0",
     "leaflet": "^1.7.1",
