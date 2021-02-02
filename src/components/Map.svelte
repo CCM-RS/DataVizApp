@@ -9,6 +9,8 @@
 	import Polyline from './Polyline.svelte';
 	import MapToolbar from './MapToolbar.svelte';
 
+	import { colorByPhase } from '../lib/projects.js';
+
 	// Debug.
 	// import GeoJson from './GeoJson.svelte';
 
@@ -51,7 +53,7 @@
 </script>
 
 <!-- Debug. -->
-<pre>Map.svelte : projects = {JSON.stringify(projects, null, 2)}</pre>
+<!-- <pre>Map.svelte : projects = {JSON.stringify(projects, null, 2)}</pre> -->
 
 <svelte:window on:resize={resizeMap} />
 
@@ -65,7 +67,7 @@
 	</Control>
 
 	{#each projects as project}
-		<Polyline latLngs={project.geometry.coordinates}>
+		<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} fillOpacity={100}>
 			<Popup>
 				<dl>
 					<dt>Municipio</dt>

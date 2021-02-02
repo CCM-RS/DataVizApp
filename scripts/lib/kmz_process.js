@@ -24,22 +24,25 @@ const rsRawGeoJsonFilePath = 'static/data/cache/raw_geo.json';
 
 // Will restrict parsed items to X items.
 // 0 = parse everything (~11.6K entries).
-const debugCapItems = 500;
+const debugCapItems = 150;
 
 // TODO mutualize this map for rendering in Svelte.
 const phasesMap = {
-	autorizacao_de_pesquisa: 1,
-	direito_de_requerer_a_lavra: 2,
-	licenciamento: 3,
-	lavra_garimpeira: 4,
-	disponibilidade: 5,
-	requerimento_de_licenciamento: 6,
-	requerimento_de_pesquisa: 7,
-	requerimento_de_lavra: 8,
-	registro_de_extracao: 9,
-	concessao_de_lavra: 10,
-	requerimento_de_lavra_garimpeira: 11,
-	requerimento_de_registro_de_extracao: 12
+	dados_nao_cadastrados: 0,
+	requerimento_de_pesquisa: 1,
+	autorizacao_de_pesquisa: 2,
+	direito_de_requerer_a_lavra: 3,
+	requerimento_de_lavra: 4,
+	concessao_de_lavra: 5,
+	requerimento_de_lavra_garimpeira: 6,
+	lavra_garimpeira: 7,
+	requerimento_de_licenciamento: 8,
+	licenciamento: 9,
+	requerimento_de_registro_de_extracao: 10,
+	registro_de_extracao: 11,
+	manifesto_de_mina: 12,
+	apto_para_disponibilidade: 13,
+	disponibilidade: 14
 };
 
 // Shared instance of the DOM parser.
@@ -83,8 +86,6 @@ const fetchKmzFile = (fileSource, filePath, ageLimit) => {
 
 			if (now > ageLimit + lastModif) {
 				requireDownload = true;
-			} else {
-				console.log(`No need to re-download '${filePath}' because it is less than 31 days old.`);
 			}
 		});
 	}
@@ -98,6 +99,8 @@ const fetchKmzFile = (fileSource, filePath, ageLimit) => {
 	if (fs.existsSync(filePath)) {
 		fs.unlinkSync(filePath);
 	}
+
+	console.log("Downloading the KMZ file from SIGMINE...");
 
 	// Download the new, up to date version.
 	// @see https://stackoverflow.com/a/60684836/2592338
@@ -292,7 +295,11 @@ const arrangeByMunicipality = projects => {
 				const cleanKey = slugify(municipality.properties.name, { separator: '_' });
 
 				// Alter the projects reference to implement mucupality as a filter.
-				project.municipality = municipality.properties.name;
+				if ('municipality' in project && project.municipality.length) {
+					project.municipality += ', ' + municipality.properties.name;
+				} else {
+					project.municipality = municipality.properties.name;
+				}
 
 				if (!(cleanKey in projectsByMunicipality)) {
 					projectsByMunicipality[cleanKey] = [];
@@ -330,19 +337,29 @@ const arrangeByPhases = projects => {
 		}
 		projectsByPhases[cleanKey].push(project);
 
-		// Populate array of distinct phase "clean" values.
 		if (!(cleanKey in phasesMap)) {
 			console.log(`Missing key in phasesMap : ${cleanKey}`);
 		} else {
-			if (phases.includes(phasesMap[cleanKey])) {
-				return;
-			}
-			phases.push(phasesMap[cleanKey]);
+			// Alter the projects reference to implement mucupality as a filter.
+			project.phase_id = phasesMap[cleanKey];
 		}
 	});
 
-	// TODO Do the combinations ?
-	// console.log(phases);
+	// More advanced projects are :
+	projectsByPhases['phases_8_9_10_11_12_13'] = [];
+	const advancedPhases = [
+		'requerimento_de_licenciamento',
+		'licenciamento',
+		'requerimento_de_registro_de_extracao',
+		'registro_de_extracao',
+		'manifesto_de_mina',
+		'apto_para_disponibilidade'
+	];
+	advancedPhases.forEach(cleanKey => {
+		if (cleanKey in projectsByPhases && projectsByPhases[cleanKey].length) {
+			projectsByPhases['phases_8_9_10_11_12_13'] = projectsByPhases['phases_8_9_10_11_12_13'].concat(projectsByPhases[cleanKey]);
+		}
+	});
 
 	return projectsByPhases;
 }
@@ -383,8 +400,6 @@ const extractGeoJsonData = async converted => {
 	});
 
 	// Writes 1 file per phase.
-	// TODO combinations of phase ?
-	// (e.g. the file for phase 1 OR 4 OR 12 would be "phases-1-4-12.json")
 	const projectsByPhases = arrangeByPhases(projects);
 	Object.keys(projectsByPhases).forEach(cleanKey => {
 		promises.push(
@@ -407,7 +422,16 @@ const extractGeoJsonData = async converted => {
 /**
  * Regroups all operations in a single entry point.
  */
-const updateKmzData = async projects => {
+const updateKmzData = async flush => {
+	if (flush) {
+		// Clear the local copy of the "raw" GeoJson data if it exists.
+		// This will trigger a rebuild of most cache files without necessarily
+		// re-fetching the remote KMZ source file(s).
+		if (fs.existsSync(rsRawGeoJsonFilePath)) {
+			fs.unlinkSync(rsRawGeoJsonFilePath);
+		}
+	}
+
 	if (fetchKmzFile()) {
 		await unzipKmzFile();
 	}

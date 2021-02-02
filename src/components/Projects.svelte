@@ -5,6 +5,7 @@
 <script>
 	import { writable } from 'svelte/store';
 	import Select from 'svelte-select';
+	import { colorByPhase } from '../lib/projects.js';
 
 	const documents = data.projects;
 	const documentsStore = writable([...documents]);
@@ -178,6 +179,27 @@
 				}
 				break;
 
+			// Sort 1. by phase, and 2. by last modified date.
+			case 'fase':
+				if (isOff || isAsc) {
+					documents.sort((a, b) => {
+						if (b['phase_id'] != a['phase_id']) {
+							return b['phase_id'] - a['phase_id'];
+						}
+						return b['modified'] - a['modified'];
+					});
+					newState = 'is-desc';
+				} else {
+					documents.sort((a, b) => {
+						if (a['phase_id'] != b['phase_id']) {
+							return a['phase_id'] - b['phase_id'];
+						}
+						return a['modified'] - b['modified'];
+					});
+					newState = 'is-asc';
+				}
+				break;
+
 			default:
 				if (isOff || isDesc) {
 					documents.sort((a, b) => getDocValOr(a, key, 'z').localeCompare(getDocValOr(b, key, 'z')));
@@ -333,7 +355,12 @@
 				<!-- <td>{ doc.ano || '' }</td> -->
 				<td>{ doc.municipality || '' }</td>
 				<td>{ doc.modified || '' }</td>
-				<td>{ doc.fase || '' }</td>
+				<td>
+					<span class="phase">
+						<span class="color-square" style="background-color:{ colorByPhase(doc) }"></span>
+						<span class="label">{ doc.fase || '' }</span>
+					</span>
+				</td>
 				<td>{ doc.area_ha || '' }</td>
 				<td>{ doc.ultimo_evento || '' }</td>
 				<td>{ doc.titular || '' }</td>
@@ -414,5 +441,16 @@
 	}
 	:global(table th.is-active button) {
 		color: inherit;
+	}
+	.phase {
+		display: flex;
+		align-items: center;
+	}
+	.phase > .color-square {
+		min-width: 3.5ch;
+		min-height: 3.5ch;
+	}
+	.phase > .label {
+		padding-left: 1ch;
 	}
 </style>
