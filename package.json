@@ -34,6 +34,7 @@
     "leaflet": "^1.7.1",
     "martinez-polygon-clipping": "^0.7.0",
     "mkdirp": "^1.0.4",
+    "nodejs-file-downloader": "^4.1.1",
     "polylabel": "^1.1.0",
     "rollup": "^2.3.4",
     "rollup-plugin-svelte": "^7.0.0",

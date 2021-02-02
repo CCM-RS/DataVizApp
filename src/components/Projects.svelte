@@ -169,7 +169,7 @@
 		let newState;
 
 		switch (key) {
-			case 'area-ha':
+			case 'area_ha':
 				if (isOff || isAsc) {
 					documents.sort((a, b) => parseFloat(a[key].replace(",", ".")) - parseFloat(b[key].replace(",", ".")));
 					newState = 'is-desc';

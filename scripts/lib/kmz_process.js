@@ -7,7 +7,8 @@
 
 const fs = require('fs-extra');
 const path = require('path');
-const http = require('http');
+const mkdirp = require('mkdirp');
+const Downloader = require('nodejs-file-downloader');
 const { pipeline } = require('stream');
 const tj = require('@mapbox/togeojson');
 const { DOMParser } = require('xmldom');
@@ -19,13 +20,15 @@ const polylabel = require('polylabel');
 
 // Settings.
 const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
-const rsKmzFilePath = 'private/RS.kmz';
+const rsKmzFileDestDir = 'private/geo/brazil/rs';
+const rsKmzFilePath = rsKmzFileDestDir + '/RS.kmz';
 const kmzLocalCopyAgeLimit = 1000 * 60 * 60 * 24 * 31;
-const rsRawGeoJsonFilePath = 'static/data/cache/raw_geo.json';
+const rsRawGeoJsonFilePath = 'static/data/cache/projects/raw_geo.json';
+const rsHighlightsFilePath = 'static/data/cache/projects/highlights.json';
 
 // Will restrict parsed items to X items.
 // 0 = parse everything (~11.6K entries).
-const debugCapItems = 500;
+const debugCapItems = 5;
 
 // TODO mutualize this map for rendering in Svelte.
 const phasesMap = {
@@ -59,13 +62,17 @@ const parser = new DOMParser({
 /**
  * Fetches KMZ source file for RS only if local file is older than 31 days.
  */
-const fetchKmzFile = (fileSource, filePath, ageLimit) => {
+const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
 	let requireDownload = false;
 	let fileHasBeenUpdated = false;
 
-	// Defaults.
+	// Defaults. TODO [evol] if this code is to be used for other states, make
+	// a proper module with optional settings.
 	if (!fileSource) {
 		fileSource = rsKmzFileSource;
+	}
+	if (!fileDestDir) {
+		fileDestDir = rsKmzFileDestDir;
 	}
 	if (!filePath) {
 		filePath = rsKmzFilePath;
@@ -77,18 +84,13 @@ const fetchKmzFile = (fileSource, filePath, ageLimit) => {
 	if (!fs.existsSync(filePath)) {
 		requireDownload = true;
 	} else {
-		fs.stat(filePath, (err, stat) => {
-			if (err) {
-				return console.error('Unable to stat local file ' + filePath, err);
-			}
+		const stats = fs.statSync(path)
+		const now = new Date().getTime();
+		const lastModif = new Date(stats.mtime).getTime();
 
-			const now = new Date().getTime();
-			const lastModif = new Date(stat.mtime).getTime();
-
-			if (now > ageLimit + lastModif) {
-				requireDownload = true;
-			}
-		});
+		if (now > ageLimit + lastModif) {
+			requireDownload = true;
+		}
 	}
 
 	// Nothing to do here if download is not required -> exit early.
@@ -97,26 +99,31 @@ const fetchKmzFile = (fileSource, filePath, ageLimit) => {
 	}
 
 	// Delete obsolete version (if it exists).
-	if (fs.existsSync(filePath)) {
-		fs.unlinkSync(filePath);
+	if (fs.existsSync(fileDestDir)) {
+		fs.rmdirSync(fileDestDir, { recursive: true });
 	}
+
+	// Make sure destination dir exists.
+	await mkdirp.sync(fileDestDir);
 
 	console.log("Downloading the KMZ file from SIGMINE...");
 
 	// Download the new, up to date version.
-	// @see https://stackoverflow.com/a/60684836/2592338
-	const fileWriteStream = fs.createWriteStream(filePath);
-	http.get(rsKmzFileSource, response => {
-		pipeline(response, fileWriteStream, err => {
-			if (err) {
-				console.error('Failed to download the KMZ file from SIGMINE.', err);
-				fs.unlinkSync(filePath);
-			} else {
-				fileHasBeenUpdated = true;
-				console.log('Successfully downloaded the KMZ file from SIGMINE.');
-			}
-		});
+	const downloader = new Downloader({
+		maxAttempts: 3,
+		url: rsKmzFileSource,
+		directory: rsKmzFileDestDir,
+		onProgress: percentage => {
+			console.log('% ', percentage);
+		}
 	});
+
+	try {
+		await downloader.download();
+		fileHasBeenUpdated = true;
+	} catch (error) {
+		console.error(error);
+	}
 
 	return fileHasBeenUpdated;
 };
@@ -171,7 +178,7 @@ const transformKmzFileToGeoJson = async () => {
 
 	// Automatically attempt to fetch the missing file.
 	if (!fs.existsSync('private/doc.kml')) {
-		if (fetchKmzFile()) {
+		if (await fetchKmzFile()) {
 			await unzipKmzFile();
 		}
 	}
@@ -455,7 +462,7 @@ const extractGeoJsonData = async converted => {
 	// Write parsed projects data (all projects ~ 11.6K unles debugCapItems
 	// setting is used).
 	promises.push(
-		write_file('static/data/cache/parsed-projects.json', JSON.stringify({ projects }))
+		write_file('static/data/cache/projects/parsed-projects.json', JSON.stringify({ projects }))
 	);
 
 	await Promise.all(promises);
@@ -466,11 +473,10 @@ const extractGeoJsonData = async converted => {
  */
 const updateKmzData = async flush => {
 	if (flush) {
-		// Clear the local copy of the "raw" GeoJson data if it exists.
-		// This will trigger a rebuild of most cache files without necessarily
+		// This will trigger a rebuild of all cache files without necessarily
 		// re-fetching the remote KMZ source file(s).
-		if (fs.existsSync(rsRawGeoJsonFilePath)) {
-			fs.unlinkSync(rsRawGeoJsonFilePath);
+		if (fs.existsSync('static/data/cache/projects')) {
+			fs.rmdirSync('static/data/cache/projects', { recursive: true });
 		}
 	}
 
