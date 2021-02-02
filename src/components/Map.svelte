@@ -9,6 +9,7 @@
 	import Polyline from './Polyline.svelte';
 	import MapToolbar from './MapToolbar.svelte';
 
+	import { projectsStore } from '../stores/projects.js';
 	import { colorByPhase } from '../lib/projects.js';
 
 	// Debug.
@@ -16,7 +17,8 @@
 
 	// import L from 'leaflet';
 
-	export let projects;
+	let projects;
+	$: projects = $projectsStore.projects;
 
 	let map;
 	let markerSize = 24;
@@ -69,7 +71,7 @@
 
 	{#if eye}
 		{#each projects as project}
-			<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} fillOpacity={100} />
+			<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} />
 		{/each}
 	{/if}
 

@@ -19,18 +19,19 @@ const polyclip = require('martinez-polygon-clipping');
 const polylabel = require('polylabel');
 
 // Settings.
+const kmzLocalCopyAgeLimit = 1000 * 60 * 60 * 24 * 31;
+const rsOutputCacheDir = 'static/data/cache/projects/rs';
 const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
 const rsKmzFileDestDir = 'private/geo/brazil/rs';
 const rsKmzFilePath = rsKmzFileDestDir + '/RS.kmz';
-const kmzLocalCopyAgeLimit = 1000 * 60 * 60 * 24 * 31;
-const rsRawGeoJsonFilePath = 'static/data/cache/projects/raw_geo.json';
-const rsHighlightsFilePath = 'static/data/cache/projects/highlights.json';
+const rsKmlFilePath = rsKmzFileDestDir + '/doc.kml';
+const rsMunicipalitiesGeoJson = 'static/data/geo/geojs-43-mun.json';
+const rsRawGeoJsonFilePath = rsOutputCacheDir + '/raw_geo.json';
 
 // Will restrict parsed items to X items.
 // 0 = parse everything (~11.6K entries).
-const debugCapItems = 5;
+const debugCapItems = 0;
 
-// TODO mutualize this map for rendering in Svelte.
 const phasesMap = {
 	dados_nao_cadastrados: 0,
 	requerimento_de_pesquisa: 1,
@@ -48,6 +49,46 @@ const phasesMap = {
 	apto_para_disponibilidade: 13,
 	disponibilidade: 14
 };
+const advancedPhases = [
+	'direito_de_requerer_a_lavra', // 3
+	'requerimento_de_lavra', // 4
+	'concessao_de_lavra', // 5
+	'requerimento_de_lavra_garimpeira', // 6
+	'lavra_garimpeira', // 7
+	'requerimento_de_licenciamento', // 8
+	'licenciamento', // 9
+	'requerimento_de_registro_de_extracao', // 10
+	'registro_de_extracao', // 11
+	'manifesto_de_mina', // 12
+	'apto_para_disponibilidade', // 13
+	'disponibilidade' // 14
+];
+const highlightsFilters = {
+	fase_slug: advancedPhases,
+	substance_slug: [
+		'antracito',
+		'carvao',
+		'carvao_mineral',
+		'chumbo',
+		'cobre',
+		'diamante',
+		'ferro',
+		'folhelho_betuminoso',
+		'folhelho_pirobetumino',
+		'fosfato',
+		'linhito',
+		'minerio_de_chumbo',
+		'minerio_de_cobre',
+		'minerio_de_ferro',
+		'minerio_de_ouro',
+		'minerio_de_prata',
+		'minerio_de_titanio',
+		'minerio_de_zinco',
+		'prata',
+		'rocha_betuminosa',
+		'titanio'
+	]
+};
 
 // Shared instance of the DOM parser.
 const parser = new DOMParser({
@@ -62,7 +103,7 @@ const parser = new DOMParser({
 /**
  * Fetches KMZ source file for RS only if local file is older than 31 days.
  */
-const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
+const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit, outputCacheDir) => {
 	let requireDownload = false;
 	let fileHasBeenUpdated = false;
 
@@ -80,11 +121,14 @@ const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
 	if (!ageLimit) {
 		ageLimit = kmzLocalCopyAgeLimit;
 	}
+	if (!outputCacheDir) {
+		outputCacheDir = rsOutputCacheDir;
+	}
 
 	if (!fs.existsSync(filePath)) {
 		requireDownload = true;
 	} else {
-		const stats = fs.statSync(path)
+		const stats = fs.statSync(filePath)
 		const now = new Date().getTime();
 		const lastModif = new Date(stats.mtime).getTime();
 
@@ -98,9 +142,12 @@ const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
 		return;
 	}
 
-	// Delete obsolete version (if it exists).
+	// Delete obsolete version (if it exists) and previous cache entries.
 	if (fs.existsSync(fileDestDir)) {
 		fs.rmdirSync(fileDestDir, { recursive: true });
+	}
+	if (fs.existsSync(outputCacheDir)) {
+		fs.rmdirSync(outputCacheDir, { recursive: true });
 	}
 
 	// Make sure destination dir exists.
@@ -112,10 +159,7 @@ const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
 	const downloader = new Downloader({
 		maxAttempts: 3,
 		url: rsKmzFileSource,
-		directory: rsKmzFileDestDir,
-		onProgress: percentage => {
-			console.log('% ', percentage);
-		}
+		directory: rsKmzFileDestDir
 	});
 
 	try {
@@ -134,32 +178,30 @@ const fetchKmzFile = async (fileSource, fileDestDir, filePath, ageLimit) => {
  * TODO [evol] use a dedicated sub-folder in case this code gets reused for
  * other states.
  */
-const unzipKmzFile = async filePath => {
+const unzipKmzFile = async (fileDestDir, filePath) => {
+	// Defaults.
+	if (!fileDestDir) {
+		fileDestDir = rsKmzFileDestDir;
+	}
+	if (!filePath) {
+		filePath = rsKmzFilePath;
+	}
+
 	// Delete any potentially obsolete local unzipped copies (if they exist).
-	const filesToClean = ['private/doc.kml', 'private/legend0.png'];
+	const filesToClean = [rsKmlFilePath, fileDestDir + '/legend0.png'];
 	filesToClean.forEach(f => {
 		if (fs.existsSync(f)) {
 			fs.unlinkSync(f);
 		}
 	});
 
-	// Defaults.
-	if (!filePath) {
-		filePath = rsKmzFilePath;
-	}
-
 	// Unzip KMZ to KML.
 	try {
-		await extract(filePath, { dir: path.resolve('private') });
+		await extract(filePath, { dir: path.resolve(fileDestDir) });
 		console.log('Successfully extracted the KMZ file.');
 	} catch (err) {
 		console.error('Failed to unzip the KMZ file.', err);
 		return false;
-	}
-
-	// Clear the local copy of the "raw" GeoJson data if it exists.
-	if (fs.existsSync(rsRawGeoJsonFilePath)) {
-		fs.unlinkSync(rsRawGeoJsonFilePath);
 	}
 
 	return true;
@@ -170,20 +212,27 @@ const unzipKmzFile = async filePath => {
  *
  * @returns {Object} the GeoJson data.
  */
-const transformKmzFileToGeoJson = async () => {
+const transformToGeoJson = async (kmlFilePath, rawGeoJsonCacheFilePath) => {
+	// Defaults.
+	if (!kmlFilePath) {
+		kmlFilePath = rsKmlFilePath
+	}
+	if (!rawGeoJsonCacheFilePath) {
+		rawGeoJsonCacheFilePath = rsRawGeoJsonFilePath
+	}
+
 	// Avoid re-converting if a local copy of the "raw" GeoJson data exists.
-	if (fs.existsSync(rsRawGeoJsonFilePath)) {
-		return fs.readJsonSync(rsRawGeoJsonFilePath);
+	if (fs.existsSync(rawGeoJsonCacheFilePath)) {
+		return fs.readJsonSync(rawGeoJsonCacheFilePath);
 	}
 
-	// Automatically attempt to fetch the missing file.
-	if (!fs.existsSync('private/doc.kml')) {
-		if (await fetchKmzFile()) {
-			await unzipKmzFile();
-		}
+	// Automatically attempt to fetch the missing file if it's missing.
+	if (!fs.existsSync(kmlFilePath)) {
+		await fetchKmzFile();
+		await unzipKmzFile();
 	}
 
-	const kml = parser.parseFromString(fs.readFileSync('private/doc.kml', 'utf8'));
+	const kml = parser.parseFromString(fs.readFileSync(kmlFilePath, 'utf8'));
 	if (!kml) {
 		console.error('Failed to parse KML file.', err);
 		return false;
@@ -290,15 +339,12 @@ const extractDateFromString = str => {
 /**
  * Distributes projects by municipality.
  *
- * TODO check all projects belong to at least 1 municipality ?
- * TODO (Over)Writes dynamically generated Svelte routes for each municipality ?
- *
  * @param {Array} projects : extracted data for all projects.
  * @returns {Object} projects keyed by slug of municipalities.
  */
 const arrangeByMunicipality = projects => {
 	const projectsByMunicipality = {};
-	const municipalities = fs.readJsonSync('static/data/geo/geojs-43-mun.json');
+	const municipalities = fs.readJsonSync(rsMunicipalitiesGeoJson);
 
 	municipalities.features.forEach(municipality => {
 		projects.forEach(project => {
@@ -358,14 +404,6 @@ const arrangeByPhases = projects => {
 
 	// More advanced projects are :
 	projectsByPhases['phases_8_9_10_11_12_13'] = [];
-	const advancedPhases = [
-		'requerimento_de_licenciamento',
-		'licenciamento',
-		'requerimento_de_registro_de_extracao',
-		'registro_de_extracao',
-		'manifesto_de_mina',
-		'apto_para_disponibilidade'
-	];
 	advancedPhases.forEach(cleanKey => {
 		if (cleanKey in projectsByPhases && projectsByPhases[cleanKey].length) {
 			projectsByPhases['phases_8_9_10_11_12_13'] = projectsByPhases['phases_8_9_10_11_12_13'].concat(projectsByPhases[cleanKey]);
@@ -383,29 +421,27 @@ const arrangeByPhases = projects => {
  */
 const arrangeBySubstance = projects => {
 	const projectsBySubstance = {};
-
 	projects.forEach(project => {
-		const cleanKey = slugify(project.substancia, { separator: '_' });
-
-		// Alter the projects reference to implement this as a filter.
-		project.substanceId = cleanKey;
-
-		if (!(cleanKey in projectsBySubstance)) {
-			projectsBySubstance[cleanKey] = [];
+		if (!(project.substance_slug in projectsBySubstance)) {
+			projectsBySubstance[project.substance_slug] = [];
 		}
-
-		projectsBySubstance[cleanKey].push(project);
+		projectsBySubstance[project.substance_slug].push(project);
 	});
-
 	return projectsBySubstance;
 }
 
 /**
  * Extracts structured data from the GeoJson object.
  */
-const extractGeoJsonData = async converted => {
+const extractGeoJsonData = async (converted, outputCacheDir) => {
+	// Defaults.
+	if (!outputCacheDir) {
+		outputCacheDir = rsOutputCacheDir;
+	}
+
+	// Automatically attempt to get the GeoJson source if it's missing.
 	if (!converted) {
-		converted = await transformKmzFileToGeoJson();
+		converted = await transformToGeoJson();
 	}
 
 	let i;
@@ -417,8 +453,14 @@ const extractGeoJsonData = async converted => {
 	converted.features.forEach((feature, i) => {
 		const project = parseGeoJsonDesc(feature);
 		if (project) {
+			// Assign the slugified phase for optimized color matching.
+			// @see src/lib/projects.js
+			project.fase_slug = slugify(project.fase, { separator: '_' });
+			project.fase_id = phasesMap[project.fase_slug];
+			// Assign the substance_slug as well.
+			project.substance_slug = slugify(project.substancia, { separator: '_' });
 			// Assign the center of the polygon for easier Marker positionning.
-			project.geometry.centerPoint = polylabel(project.geometry.coordinates, 1.0);
+			project.geometry.centerPoint = polylabel(project.geometry.coordinates, .4);
 			projects.push(project);
 		}
 	});
@@ -431,7 +473,7 @@ const extractGeoJsonData = async converted => {
 	Object.keys(projectsByMunicipality).forEach(cleanKey => {
 		promises.push(
 			write_file(
-				`static/data/cache/projects/by-municipality/${cleanKey}.json`,
+				`${outputCacheDir}/by-municipality/${cleanKey}.json`,
 				JSON.stringify({ projects: projectsByMunicipality[cleanKey] })
 			)
 		);
@@ -442,7 +484,7 @@ const extractGeoJsonData = async converted => {
 	Object.keys(projectsByPhases).forEach(cleanKey => {
 		promises.push(
 			write_file(
-				`static/data/cache/projects/by-phase/${cleanKey}.json`,
+				`${outputCacheDir}/by-phase/${cleanKey}.json`,
 				JSON.stringify({ projects: projectsByPhases[cleanKey] })
 			)
 		);
@@ -453,16 +495,34 @@ const extractGeoJsonData = async converted => {
 	Object.keys(projectsBySubstance).forEach(cleanKey => {
 		promises.push(
 			write_file(
-				`static/data/cache/projects/by-substance/${cleanKey}.json`,
+				`${outputCacheDir}/by-substance/${cleanKey}.json`,
 				JSON.stringify({ projects: projectsBySubstance[cleanKey] })
 			)
 		);
 	});
 
-	// Write parsed projects data (all projects ~ 11.6K unles debugCapItems
+	// Write the highlights. These are the projects shown by default on the
+	// homepage.
+	const highlights = [];
+	projects.forEach(project => {
+		let matchAll = true;
+		Object.keys(highlightsFilters).forEach(key => {
+			if (!(key in project) || !highlightsFilters[key].includes(project[key])) {
+				matchAll = false;
+			}
+		});
+		if (matchAll) {
+			highlights.push(project);
+		}
+	});
+	promises.push(
+		write_file(`${outputCacheDir}/highlights.json`, JSON.stringify({ projects: highlights }))
+	);
+
+	// Write total parsed projects data (all projects ~ 11.6K unles debugCapItems
 	// setting is used).
 	promises.push(
-		write_file('static/data/cache/projects/parsed-projects.json', JSON.stringify({ projects }))
+		write_file(`${outputCacheDir}/all-projects.json`, JSON.stringify({ projects }))
 	);
 
 	await Promise.all(promises);
@@ -471,16 +531,21 @@ const extractGeoJsonData = async converted => {
 /**
  * Regroups all operations in a single entry point.
  */
-const updateKmzData = async flush => {
+const updateKmzData = async (flush, outputCacheDir) => {
+	// Defaults.
+	if (!outputCacheDir) {
+		outputCacheDir = rsOutputCacheDir;
+	}
+
 	if (flush) {
 		// This will trigger a rebuild of all cache files without necessarily
 		// re-fetching the remote KMZ source file(s).
-		if (fs.existsSync('static/data/cache/projects')) {
-			fs.rmdirSync('static/data/cache/projects', { recursive: true });
+		if (fs.existsSync(outputCacheDir)) {
+			fs.rmdirSync(outputCacheDir, { recursive: true });
 		}
 	}
 
-	if (fetchKmzFile()) {
+	if (await fetchKmzFile()) {
 		await unzipKmzFile();
 	}
 	await extractGeoJsonData();

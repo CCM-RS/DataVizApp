@@ -1,12 +1,5 @@
 <script context="module">
 	import * as homepage from '../../static/data/entities/config/homepage.json';
-
-	// By default, show only projects of "advanced" phases.
-	import * as projectsData from '../../static/data/cache/projects/by-phase/phases_8_9_10_11_12_13.json';
-
-	// Debug : show all projects (test subset).
-	// @see scripts/lib/kmz_process.js
-	// import * as projectsData from '../../static/data/cache/parsed-projects.json';
 </script>
 
 <script>
@@ -14,6 +7,7 @@
 	// import Map from "../components/Map.svelte";
 	import { getContext } from 'svelte';
 	import { onMount } from 'svelte';
+	import { projectsStore } from '../stores/projects.js';
 
 	const global_data = getContext('global_data');
 
@@ -36,8 +30,8 @@
 </svelte:head>
 
 <h1 class="full-vw">{ homepage.title }</h1>
-<p>Projetos em fase avançada : <strong>{ projectsData.projects.length }</strong></p>
-<p><a href="/detalhes">→ Detalhes + filtros (WIP)</a></p>
+<p>Projetos selecionados : <strong>{ $projectsStore.projects.length }</strong></p>
+<p><a href="/detalhes">→ Detalhes + filtros</a></p>
 
 <!-- {#each projectsData.projects as project}
 	<pre>project = {project}</pre>
@@ -47,7 +41,7 @@
 	<!-- Workaround : a dependency is using a direct reference to window. -->
 	{#if mounted}
 		{#await import("../components/Map.svelte") then m}
-			<svelte:component this="{m.default}" projects={projectsData.projects} />
+			<svelte:component this="{m.default}" />
 		{/await}
 	{/if}
 </div>

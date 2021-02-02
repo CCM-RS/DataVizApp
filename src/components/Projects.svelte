@@ -1,5 +1,6 @@
 <script context="module">
-	import * as data from '../../static/data/cache/parsed-projects.json';
+	// import * as data from '../../static/data/cache/projects/rs/all-projects.json';
+	import * as data from '../../static/data/cache/projects/rs/highlights.json';
 </script>
 
 <script>
