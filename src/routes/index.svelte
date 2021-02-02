@@ -1,12 +1,12 @@
 <script context="module">
 	import * as homepage from '../../static/data/entities/config/homepage.json';
 
-	// TODO By default, show only projects of "advanced" phases.
-	// import * as advancedProjects from '../../static/data/cache/projects/by-phase/phases-1-2-3.json';
+	// By default, show only projects of "advanced" phases.
+	import * as projectsData from '../../static/data/cache/projects/by-phase/phases_8_9_10_11_12_13.json';
 
 	// Debug : show all projects (test subset).
 	// @see scripts/lib/kmz_process.js
-	import * as projectsData from '../../static/data/cache/parsed-projects.json';
+	// import * as projectsData from '../../static/data/cache/parsed-projects.json';
 </script>
 
 <script>
@@ -36,6 +36,7 @@
 </svelte:head>
 
 <h1 class="full-vw">{ homepage.title }</h1>
+<p>Projetos em fase avançada : <strong>{ projectsData.projects.length }</strong></p>
 <p><a href="/detalhes">→ Detalhes + filtros (WIP)</a></p>
 
 <!-- {#each projectsData.projects as project}

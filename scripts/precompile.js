@@ -5,4 +5,4 @@
 
 const { updateKmzData } = require('./lib/kmz_process.js');
 
-updateKmzData(true);
+// updateKmzData(true);

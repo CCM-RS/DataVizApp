@@ -15,6 +15,7 @@ const extract = require('extract-zip');
 const { write_file } = require('./fs.js');
 const slugify = require('@sindresorhus/slugify');
 const polyclip = require('martinez-polygon-clipping');
+const polylabel = require('polylabel');
 
 // Settings.
 const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
@@ -24,7 +25,7 @@ const rsRawGeoJsonFilePath = 'static/data/cache/raw_geo.json';
 
 // Will restrict parsed items to X items.
 // 0 = parse everything (~11.6K entries).
-const debugCapItems = 150;
+const debugCapItems = 500;
 
 // TODO mutualize this map for rendering in Svelte.
 const phasesMap = {
@@ -212,6 +213,9 @@ const parseGeoJsonDesc = feature => {
 	if (!('description' in feature.properties) || !feature.properties.description.length) {
 		return false;
 	}
+	if (!('geometry' in feature) || !('coordinates' in feature.geometry) || !feature.geometry.coordinates.length) {
+		return false;
+	}
 
 	const document = parser.parseFromString(feature.properties.description);
 	if (!document) {
@@ -294,7 +298,7 @@ const arrangeByMunicipality = projects => {
 			if (polyclip.intersection(project.geometry.coordinates, municipality.geometry.coordinates)) {
 				const cleanKey = slugify(municipality.properties.name, { separator: '_' });
 
-				// Alter the projects reference to implement mucupality as a filter.
+				// Alter the projects reference to implement this as a filter.
 				if ('municipality' in project && project.municipality.length) {
 					project.municipality += ', ' + municipality.properties.name;
 				} else {
@@ -340,7 +344,7 @@ const arrangeByPhases = projects => {
 		if (!(cleanKey in phasesMap)) {
 			console.log(`Missing key in phasesMap : ${cleanKey}`);
 		} else {
-			// Alter the projects reference to implement mucupality as a filter.
+			// Alter the projects reference to implement this as a filter.
 			project.phase_id = phasesMap[cleanKey];
 		}
 	});
@@ -365,6 +369,31 @@ const arrangeByPhases = projects => {
 }
 
 /**
+ * Distributes projects by substance.
+ *
+ * @param {Array} projects : extracted data for all projects.
+ * @returns {Object} projects keyed by slug of substance.
+ */
+const arrangeBySubstance = projects => {
+	const projectsBySubstance = {};
+
+	projects.forEach(project => {
+		const cleanKey = slugify(project.substancia, { separator: '_' });
+
+		// Alter the projects reference to implement this as a filter.
+		project.substanceId = cleanKey;
+
+		if (!(cleanKey in projectsBySubstance)) {
+			projectsBySubstance[cleanKey] = [];
+		}
+
+		projectsBySubstance[cleanKey].push(project);
+	});
+
+	return projectsBySubstance;
+}
+
+/**
  * Extracts structured data from the GeoJson object.
  */
 const extractGeoJsonData = async converted => {
@@ -381,6 +410,8 @@ const extractGeoJsonData = async converted => {
 	converted.features.forEach((feature, i) => {
 		const project = parseGeoJsonDesc(feature);
 		if (project) {
+			// Assign the center of the polygon for easier Marker positionning.
+			project.geometry.centerPoint = polylabel(project.geometry.coordinates, 1.0);
 			projects.push(project);
 		}
 	});
@@ -406,6 +437,17 @@ const extractGeoJsonData = async converted => {
 			write_file(
 				`static/data/cache/projects/by-phase/${cleanKey}.json`,
 				JSON.stringify({ projects: projectsByPhases[cleanKey] })
+			)
+		);
+	});
+
+	// Writes 1 file per substance.
+	const projectsBySubstance = arrangeBySubstance(projects);
+	Object.keys(projectsBySubstance).forEach(cleanKey => {
+		promises.push(
+			write_file(
+				`static/data/cache/projects/by-substance/${cleanKey}.json`,
+				JSON.stringify({ projects: projectsBySubstance[cleanKey] })
 			)
 		);
 	});

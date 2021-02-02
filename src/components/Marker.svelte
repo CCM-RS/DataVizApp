@@ -20,7 +20,7 @@
 			className: 'map-marker',
 			iconSize: L.point(width, height)
 		});
-		marker = L.marker(latLng, { icon }).addTo(layerGroup);
+		marker = L.marker(latLng.reverse(), { icon }).addTo(layerGroup);
 
     return {
       destroy() {

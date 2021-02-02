@@ -19,6 +19,7 @@
 	export let projects;
 
 	let map;
+	let markerSize = 24;
 
 	// const markerLocations = [
 	// 	[-30.020949, -51.4108658],
@@ -66,33 +67,41 @@
 		<MapToolbar bind:eye bind:lines={showLines} on:click-reset={resetMapView} />
 	</Control>
 
-	{#each projects as project}
-		<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} fillOpacity={100}>
-			<Popup>
-				<dl>
-					<dt>Municipio</dt>
-					<dd>{project.municipality}</dd>
-					<dt>Modificado</dt>
-					<dd>{project.modified}</dd>
-					<dt>Fase</dt>
-					<dd>{project.fase}</dd>
-					<dt>Area (ha)</dt>
-					<dd>{project.area_ha}</dd>
-					<dt>Ultimo evento</dt>
-					<dd>{project.ultimo_evento}</dd>
-					<dt>Titular</dt>
-					<dd>{project.titular}</dd>
-					<dt>Substancia</dt>
-					<dd>{project.substancia}</dd>
-					<dt>Uso</dt>
-					<dd>{project.uso}</dd>
-					<dt>Processo</dt>
-					<dd>{project.processo}</dd>
-				</dl>
-			</Popup>
-		</Polyline>
-	{/each}
+	{#if eye}
+		{#each projects as project}
+			<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} fillOpacity={100} />
+		{/each}
+	{/if}
 
+	{#if showLines}
+		{#each projects as project}
+			<Marker latLng={project.geometry.centerPoint} width={markerSize} height={markerSize}>
+				<svg style="width:{markerSize}px;height:{markerSize}px" fill="none" stroke="{colorByPhase(project)}" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12 9v2m0 4h.01"></path></svg>
+				<Popup>
+					<dl>
+						<dt>Municipio</dt>
+						<dd>{project.municipality}</dd>
+						<dt>Modificado</dt>
+						<dd>{project.modified}</dd>
+						<dt>Fase</dt>
+						<dd>{project.fase}</dd>
+						<dt>Area (ha)</dt>
+						<dd>{project.area_ha}</dd>
+						<dt>Ultimo evento</dt>
+						<dd>{project.ultimo_evento}</dd>
+						<dt>Titular</dt>
+						<dd>{project.titular}</dd>
+						<dt>Substancia</dt>
+						<dd>{project.substancia}</dd>
+						<dt>Uso</dt>
+						<dd>{project.uso}</dd>
+						<dt>Processo</dt>
+						<dd>{project.processo}</dd>
+					</dl>
+				</Popup>
+			</Marker>
+		{/each}
+	{/if}
 
 	<!-- {#if eye}
 		{#each markerLocations as latLng}
