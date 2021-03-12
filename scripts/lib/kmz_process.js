@@ -3,6 +3,13 @@
  * Updates local copy of KMZ geo data from Sigmine, then converts and parses it.
  *
  * See https://www.gov.br/anm/pt-br/assuntos/acesso-a-sistemas/sistema-de-informacoes-geograficas-da-mineracao-sigmine
+ *
+ * Update :
+ * See https://www.gov.br/anm/pt-br/assuntos/acesso-a-sistemas/geoinformacao-mineral
+ * -> https://dados.gov.br/dataset/sistema-de-informacoes-geograficas-da-mineracao-sigmine
+ *
+ * RS :
+ * https://dados.gov.br/dataset/sistema-de-informacoes-geograficas-da-mineracao-sigmine/resource/0d0f51e7-776d-4506-829d-b5e3e70662a4
  */
 
 const fs = require('fs-extra');
@@ -34,6 +41,7 @@ const rsRawGeoJsonFilePath = rsOutputCacheDir + '/raw_geo.json';
 const debugCapItems = 0;
 
 const phasesMap = {
+	dado_nao_cadastrado: 0,
 	dados_nao_cadastrados: 0,
 	requerimento_de_pesquisa: 1,
 	autorizacao_de_pesquisa: 2,
@@ -334,7 +342,10 @@ const parseGeoJsonDesc = feature => {
  */
 const extractDateFromString = str => {
 	const matches = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-	return `${matches[3]}/${matches[2]}/${matches[1]}`;
+	if (matches && matches.length) {
+		return `${matches[3]}/${matches[2]}/${matches[1]}`;
+	}
+	return '';
 }
 
 /**
@@ -539,10 +550,27 @@ const updateKmzData = async (flush, outputCacheDir) => {
 	}
 
 	if (flush) {
-		// This will trigger a rebuild of all cache files without necessarily
-		// re-fetching the remote KMZ source file(s).
-		if (fs.existsSync(outputCacheDir)) {
-			fs.rmdirSync(outputCacheDir, { recursive: true });
+		// Only rebuild the highligths.
+		if (flush === 'highlights') {
+			const highlights = [];
+			projects.forEach(project => {
+				let matchAll = true;
+				Object.keys(highlightsFilters).forEach(key => {
+					if (!highlightsFilters[key].includes(project[key])) {
+						matchAll = false;
+					}
+				});
+				if (matchAll) {
+					highlights.push(project);
+				}
+			});
+			write_file(`static/data/cache/projects/rs/highlights.json`, JSON.stringify({ projects: highlights }));
+		} else {
+			// This will trigger a rebuild of all cache files without necessarily
+			// re-fetching the remote KMZ source file(s).
+			if (fs.existsSync(outputCacheDir)) {
+				fs.rmdirSync(outputCacheDir, { recursive: true });
+			}
 		}
 	}
 

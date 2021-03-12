@@ -4,8 +4,11 @@
 
 <script>
 	import { setContext } from 'svelte';
+	import Nav from '../components/Nav.svelte';
+
 	const globals = global_data.default;
 	setContext('global_data', globals);
 </script>
 
+<Nav></Nav>
 <slot></slot>

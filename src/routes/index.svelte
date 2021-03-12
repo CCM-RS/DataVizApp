@@ -29,15 +29,12 @@
 	<!-- <meta name="twitter:image:alt" content="{ homepage.image_alt ? homepage.image_alt : global_data.site_name }"> -->
 </svelte:head>
 
-<h1 class="full-vw">{ homepage.title }</h1>
-<p>Projetos selecionados : <strong>{ $projectsStore.projects.length }</strong></p>
-<p><a href="/detalhes">→ Detalhes + filtros</a></p>
+<h1>{ homepage.title }</h1>
+<div class="content-wrap">
+	<p>Projetos selecionados : <strong>{ $projectsStore.projects.length }</strong></p>
+</div>
 
-<!-- {#each projectsData.projects as project}
-	<pre>project = {project}</pre>
-{/each} -->
-
-<div class="map-wrap full-vw">
+<div class="map-wrap">
 	<!-- Workaround : a dependency is using a direct reference to window. -->
 	{#if mounted}
 		{#await import("../components/Map.svelte") then m}
@@ -48,8 +45,8 @@
 
 <style>
 	h1 {
+		font-size: 1.33rem;
 		text-align: center;
-		font-size: 1.5rem;
 	}
 	.map-wrap {
 		position: relative;

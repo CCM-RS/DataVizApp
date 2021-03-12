@@ -11,21 +11,16 @@
 	<meta property="og:site_name" content="{ global_data.site_name }">
 </svelte:head>
 
-<h1 class="full-vw">Detalhes dos projetos</h1>
-<p><a href="/">← Homepage</a></p>
+<div class="content-wrap">
+	<h1>Detalhes dos projetos</h1>
+</div>
 
 <div class="projects-list">
 	<Projects />
 </div>
 
 <style>
-	h1 {
-		text-align: center;
-		font-size: 1.5rem;
-	}
 	.projects-list {
-		padding-top: 2rem;
-		padding-bottom: 2rem;
 		flex-grow: 1;
 	}
 </style>
