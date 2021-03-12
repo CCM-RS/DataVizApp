@@ -21,7 +21,8 @@ const polylabel = require('polylabel');
 // Settings.
 const kmzLocalCopyAgeLimit = 1000 * 60 * 60 * 24 * 31;
 const rsOutputCacheDir = 'static/data/cache/projects/rs';
-const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
+// const rsKmzFileSource = 'http://sigmine.dnpm.gov.br/sirgas2000/RS.kmz';
+const rsKmzFileSource = 'https://app.anm.gov.br/dadosabertos/SIGMINE/PROCESSOS_MINERARIOS/RS.kmz';
 const rsKmzFileDestDir = 'private/geo/brazil/rs';
 const rsKmzFilePath = rsKmzFileDestDir + '/RS.kmz';
 const rsKmlFilePath = rsKmzFileDestDir + '/doc.kml';
