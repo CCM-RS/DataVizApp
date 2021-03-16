@@ -1,15 +1,18 @@
-<script context="module">
+<!-- <script context="module">
 	// import * as data from '../../static/data/cache/projects/rs/all-projects.json';
 	import * as data from '../../static/data/cache/projects/rs/highlights.json';
-</script>
+</script> -->
 
 <script>
-	import { writable } from 'svelte/store';
+	// import { writable } from 'svelte/store';
 	import Select from 'svelte-select';
 	import { colorByPhase } from '../lib/projects.js';
 
-	const documents = data.projects;
-	const documentsStore = writable([...documents]);
+	// const initialProjects = data.projects;
+	// const documentsStore = writable([...initialProjects]);
+
+	import { projectsStore } from '../stores/projects.js';
+	import { initialProjects } from '../stores/projects.js';
 
 	// {"processo":"810265/2009","id":"{93500A54-5457-49C8-A8B2-D3A8E6585A4B}","numero":"810265","ano":"2009","area-ha":"1,97","fase":"LICENCIAMENTO","ultimo-evento":"742 - LICEN/PRORROGAÇÃO REGISTRO LICENÇA AUTORIZADA EM 21/09/2017","titular":"ANNA M. WALKER","substancia":"CASCALHO","uso":"Construção civil","uf":"RS"}
 
@@ -23,6 +26,9 @@
 	 * Populates the multi-select field items.
 	 */
 	const getSelectItems = (docs) => {
+		// if (!docs || !docs.length) {
+		// 	docs = [...initialProjects];
+		// }
 		docs.forEach(doc => {
 			multiSelectSearchesInKeys.forEach(key => {
 				if (key in doc) {
@@ -79,11 +85,11 @@
 	 * Applies "and" filtering for the multi-select field.
 	 */
 	const applySelectFilterAnd = () => {
-		documentsStore.update(currentResults => {
+		projectsStore.update(currentResults => {
 			let newResults = [];
 
-			for (let i = 0; i < documents.length; i++) {
-				const result = documents[i];
+			for (let i = 0; i < initialProjects.length; i++) {
+				const result = initialProjects[i];
 				let allFilterValuesMatch = true;
 
 				selectedFilterItems.forEach(selectedFilterItem => {
@@ -105,11 +111,11 @@
 	 * Applies "or" filtering for the multi-select field.
 	 */
 	const applySelectFilterOr = () => {
-		documentsStore.update(currentResults => {
+		projectsStore.update(currentResults => {
 			let newResults = [];
 
-			for (let i = 0; i < documents.length; i++) {
-				const result = documents[i];
+			for (let i = 0; i < initialProjects.length; i++) {
+				const result = initialProjects[i];
 				let anyFilterValueMatches = false;
 
 				selectedFilterItems.forEach(selectedFilterItem => {
@@ -132,9 +138,9 @@
 	 */
   const clearSelectFilter = () => {
 		// Debug.
-		// console.log(`clearSelectFilter() : (${filterOp}, ${documents.length} results)`);
+		// console.log(`clearSelectFilter() : (${filterOp}, ${initialProjects.length} results)`);
 
-		documentsStore.set(documents);
+		projectsStore.set(initialProjects);
 	};
 
 	/**
@@ -172,10 +178,10 @@
 		switch (key) {
 			case 'area_ha':
 				if (isOff || isAsc) {
-					documents.sort((a, b) => parseFloat(a[key].replace(",", ".")) - parseFloat(b[key].replace(",", ".")));
+					initialProjects.sort((a, b) => parseFloat(a[key].replace(",", ".")) - parseFloat(b[key].replace(",", ".")));
 					newState = 'is-desc';
 				} else {
-					documents.sort((a, b) => parseFloat(b[key].replace(",", ".")) - parseFloat(a[key].replace(",", ".")));
+					initialProjects.sort((a, b) => parseFloat(b[key].replace(",", ".")) - parseFloat(a[key].replace(",", ".")));
 					newState = 'is-asc';
 				}
 				break;
@@ -183,17 +189,17 @@
 			// Sort 1. by phase, and 2. by last modified date.
 			case 'fase':
 				if (isOff || isAsc) {
-					documents.sort((a, b) => {
-						if (b['phase_id'] != a['phase_id']) {
-							return b['phase_id'] - a['phase_id'];
+					initialProjects.sort((a, b) => {
+						if (b['fase_id'] != a['fase_id']) {
+							return b['fase_id'] - a['fase_id'];
 						}
 						return b['modified'] - a['modified'];
 					});
 					newState = 'is-desc';
 				} else {
-					documents.sort((a, b) => {
-						if (a['phase_id'] != b['phase_id']) {
-							return a['phase_id'] - b['phase_id'];
+					initialProjects.sort((a, b) => {
+						if (a['fase_id'] != b['fase_id']) {
+							return a['fase_id'] - b['fase_id'];
 						}
 						return a['modified'] - b['modified'];
 					});
@@ -203,17 +209,17 @@
 
 			default:
 				if (isOff || isDesc) {
-					documents.sort((a, b) => getDocValOr(a, key, 'z').localeCompare(getDocValOr(b, key, 'z')));
+					initialProjects.sort((a, b) => getDocValOr(a, key, 'z').localeCompare(getDocValOr(b, key, 'z')));
 					newState = 'is-asc';
 				} else {
-					documents.sort((a, b) => getDocValOr(b, key, 'z').localeCompare(getDocValOr(a, key, 'z')));
+					initialProjects.sort((a, b) => getDocValOr(b, key, 'z').localeCompare(getDocValOr(a, key, 'z')));
 					newState = 'is-desc';
 				}
 				break;
 		}
 
 		// Update docs in their new order.
-		documentsStore.set(documents);
+		projectsStore.set(initialProjects);
 
 		// Re-apply active filters (if any).
 		if (selectedFilterItems) {
@@ -245,7 +251,7 @@
 <div class="filters">
 	<form>
 		<div class="select">
-			<Select items={getSelectItems($documentsStore)} isMulti={true}
+			<Select items={getSelectItems($projectsStore)} isMulti={true}
 				on:select={applySelectFilter}
 				on:clear={clearSelectFilter}
 				bind:selectedValue={selectedFilterItems}
@@ -269,13 +275,15 @@
 			</div>
 		</div>
 	</form>
-	<p><strong>{ $documentsStore.length }</strong> results</p>
+	<p><strong>{ $projectsStore.length }</strong> results</p>
 </div>
 
 <!-- DEBUG -->
-<!-- <pre>ExpChannelsIndex.svelte : documents = {JSON.stringify($documentsStore, null, 2)}</pre> -->
-<!-- <pre>ExpChannelsIndex.svelte : filterOp = {JSON.stringify(filterOp, null, 2)}</pre> -->
-<!-- <pre>ExpChannelsIndex.svelte : documents = {JSON.stringify(getDocuments(), null, 2)}</pre> -->
+<!-- <pre>Projects.svelte : initialProjects = {JSON.stringify(initialProjects, null, 2)}</pre> -->
+<!-- <pre>Projects.svelte : $projectsStore = {JSON.stringify($projectsStore, null, 2)}</pre> -->
+<!-- <pre>Projects.svelte : filterOp = {JSON.stringify(filterOp, null, 2)}</pre> -->
+<!-- <pre>Projects.svelte : $projectsStore.length = {$projectsStore.length}</pre>
+<pre>Projects.svelte : initialProjects.length = {initialProjects.length}</pre> -->
 
 <table>
 	<thead>
@@ -344,7 +352,7 @@
 		</th>
 	</thead>
 	<tbody>
-	{#each $documentsStore as doc, i}
+	{#each $projectsStore as doc, i}
 		<tr>
 			<!-- <td>{ doc.ano || '' }</td> -->
 			<td>{ doc.municipality || '' }</td>

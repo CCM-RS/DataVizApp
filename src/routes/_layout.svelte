@@ -6,9 +6,12 @@
 	import { setContext } from 'svelte';
 	import Nav from '../components/Nav.svelte';
 
+	export let segment;
+
 	const globals = global_data.default;
 	setContext('global_data', globals);
 </script>
 
-<Nav></Nav>
+<Nav {segment} />
+
 <slot></slot>

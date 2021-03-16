@@ -408,9 +408,6 @@ const arrangeByPhases = projects => {
 
 		if (!(cleanKey in phasesMap)) {
 			console.log(`Missing key in phasesMap : ${cleanKey}`);
-		} else {
-			// Alter the projects reference to implement this as a filter.
-			project.phase_id = phasesMap[cleanKey];
 		}
 	});
 
@@ -552,7 +549,10 @@ const updateKmzData = async (flush, outputCacheDir) => {
 	if (flush) {
 		// Only rebuild the highligths.
 		if (flush === 'highlights') {
+			const projectsData = fs.readJsonSync('static/data/cache/projects/rs/all-projects.json');
+			const projects = projectsData.projects;
 			const highlights = [];
+
 			projects.forEach(project => {
 				let matchAll = true;
 				Object.keys(highlightsFilters).forEach(key => {
@@ -564,7 +564,11 @@ const updateKmzData = async (flush, outputCacheDir) => {
 					highlights.push(project);
 				}
 			});
+
 			write_file(`static/data/cache/projects/rs/highlights.json`, JSON.stringify({ projects: highlights }));
+
+			// Do not process the rest.
+			return;
 		} else {
 			// This will trigger a rebuild of all cache files without necessarily
 			// re-fetching the remote KMZ source file(s).

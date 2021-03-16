@@ -30,6 +30,7 @@
 </svelte:head>
 
 <h1>{ homepage.title }</h1>
+
 <div class="content-wrap">
 	<p>Projetos selecionados : <strong>{ $projectsStore.projects.length }</strong></p>
 </div>
@@ -45,8 +46,9 @@
 
 <style>
 	h1 {
-		font-size: 1.33rem;
-		text-align: center;
+		margin: 0;
+		padding: .33rem .4rem .25rem .4rem;
+		font-size: 1rem;
 	}
 	.map-wrap {
 		position: relative;
