@@ -70,7 +70,7 @@
 		<MapToolbar bind:eye bind:lines={showLines} on:click-reset={resetMapView} />
 	</Control> -->
 
-	{#if eye}
+	<!-- {#if eye} -->
 		{#each projects as project}
 			<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true}>
 				<Popup>
@@ -97,9 +97,9 @@
 				</Popup>
 			</Polyline>
 		{/each}
-	{/if}
+	<!-- {/if} -->
 
-	{#if showLines}
+	<!-- {#if showLines} -->
 		{#each projects as project}
 			<Marker latLng={project.geometry.centerPoint} width={markerSize} height={markerSize}>
 				<img src="{iconBySubstance(project)}" alt="{project.substancia}" style="width:{markerSize}px;height:{markerSize}px">
@@ -127,7 +127,7 @@
 				</Popup>
 			</Marker>
 		{/each}
-	{/if}
+	<!-- {/if} -->
 
 	<!-- {#if eye}
 		{#each markerLocations as latLng}

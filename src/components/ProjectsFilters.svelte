@@ -2,16 +2,15 @@
 	import Select from 'svelte-select';
 	import { projectsStore } from '../stores/projects.js';
 	import { initialProjects } from '../stores/projects.js';
+	import { activeFilters } from '../stores/projects.js';
 
 	export let sortBy;
 
 	// {"processo":"810265/2009","id":"{93500A54-5457-49C8-A8B2-D3A8E6585A4B}","numero":"810265","ano":"2009","area-ha":"1,97","fase":"LICENCIAMENTO","ultimo-evento":"742 - LICEN/PRORROGAÇÃO REGISTRO LICENÇA AUTORIZADA EM 21/09/2017","titular":"ANNA M. WALKER","substancia":"CASCALHO","uso":"Construção civil","uf":"RS"}
 
-	let selectItems = [];
-
-	const multiSelectSearchesInKeys = ['fase', 'titular', 'substancia', 'uso', 'municipality'];
 	let filterOp = 'or';
-	let selectedFilterItems;
+	let selectItems = [];
+	const multiSelectSearchesInKeys = ['fase', 'titular', 'substancia', 'uso', 'municipality'];
 
 	/**
 	 * Populates the multi-select field items.
@@ -50,14 +49,18 @@
 	/**
 	 * Filters results based on the multi-select field current selection.
 	 */
-	const applySelectFilter = (selectedVal) => {
-		if (!selectedFilterItems) {
+	const applySelectFilter = (event) => {
+		// Debug.
+		// console.log(`applySelectFilter() : event.detail (${filterOp}) = ${JSON.stringify(event.detail)}`);
+
+		if (event && event.detail) {
+			activeFilters.set(event.detail);
+		}
+
+		if (!$activeFilters) {
 			clearSelectFilter();
 			return;
 		}
-
-		// Debug.
-		// console.log(`applySelectFilter() : selectedFilterItems (${filterOp}) = ${JSON.stringify(selectedFilterItems.map(v => v.value))}`);
 
 		switch (filterOp) {
 			case 'and':
@@ -80,7 +83,7 @@
 				const result = initialProjects[i];
 				let allFilterValuesMatch = true;
 
-				selectedFilterItems.forEach(selectedFilterItem => {
+				$activeFilters.forEach(selectedFilterItem => {
 					if (!(selectedFilterItem.key in result) || !result[selectedFilterItem.key].includes(selectedFilterItem.value)) {
 						allFilterValuesMatch = false;
 					}
@@ -106,9 +109,15 @@
 				const result = initialProjects[i];
 				let anyFilterValueMatches = false;
 
-				selectedFilterItems.forEach(selectedFilterItem => {
+				$activeFilters.forEach(selectedFilterItem => {
 					if (selectedFilterItem.key in result && result[selectedFilterItem.key].includes(selectedFilterItem.value)) {
 						anyFilterValueMatches = true;
+
+						// Debug
+						// console.log(`YES result.${selectedFilterItem.key} "${result[selectedFilterItem.key]}" includes "${selectedFilterItem.value}" ?`);
+						// 	console.log(`YES result.${selectedFilterItem.key} "${result[selectedFilterItem.key]}"`);
+						// } else {
+						// 	console.log(`NO result.${selectedFilterItem.key} "${result[selectedFilterItem.key]}"`);
 					}
 				});
 
@@ -129,6 +138,7 @@
 		// console.log(`clearSelectFilter() : (${filterOp}, ${initialProjects.length} results)`);
 
 		projectsStore.set(initialProjects);
+		activeFilters.set(null);
 	};
 
 	/**
@@ -210,7 +220,7 @@
 		projectsStore.set(initialProjects);
 
 		// Re-apply active filters (if any).
-		if (selectedFilterItems) {
+		if ($activeFilters) {
 			switch (filterOp) {
 				case 'and':
 					applySelectFilterAnd();
@@ -241,7 +251,7 @@
 		<Select items={getSelectItems($projectsStore)} isMulti={true}
 			on:select={applySelectFilter}
 			on:clear={clearSelectFilter}
-			bind:selectedValue={selectedFilterItems}
+			selectedValue={$activeFilters}
 			>
 		</Select>
 	</div>
