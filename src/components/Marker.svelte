@@ -1,5 +1,5 @@
 <script>
-  import L from 'leaflet';
+  // import L from 'leaflet';
   import { getContext, setContext } from 'svelte';
 
 	let classNames = undefined;
@@ -12,6 +12,8 @@
 	export let latLng;
 
 	const layerGroup = getContext('layerGroup')();
+	const L = getContext('L')();
+
 	setContext('layer', () => marker);
 
   function createMarker(markerElement) {

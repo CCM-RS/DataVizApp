@@ -10,11 +10,12 @@
     // onDestroy,
 	} from 'svelte';
 
-	import L from 'leaflet';
+	// import L from 'leaflet';
 
 	export let geoJsonData;
 
   let layerGroup = getContext('layerGroup')();
+  const L = getContext('getL')();
 
   L.geoJSON(geoJsonData).addTo(layerGroup);
 </script>

@@ -18,6 +18,7 @@
 :root,
 html {
 	--content-width: 60ch;
+	--content-width-l: 90ch;
 	--content-bleed: calc((100vw - var(--content-width)) / 2);
 
 	--space-l: 1rem;
@@ -67,6 +68,9 @@ body {
 	margin-left: auto;
 	width: var(--content-width);
 	max-width: 100%;
+}
+.content-wrap--l {
+	width: var(--content-width-l);
 }
 
 /* @media (min-width: 60ch) {

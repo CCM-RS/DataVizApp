@@ -3,13 +3,13 @@
 	 * See https://imfeld.dev/writing/domless_svelte_component
 	 */
 	import Leaflet from './Leaflet.svelte';
-	import Control from './Control.svelte';
+	// import Control from './Control.svelte';
 	import Marker from './Marker.svelte';
 	import Popup from './Popup.svelte';
 	import Polyline from './Polyline.svelte';
-	import MapToolbar from './MapToolbar.svelte';
+	// import MapToolbar from './MapToolbar.svelte';
 
-	import { projectsStore } from '../stores/projects.js';
+	// import { projectsStore } from '../stores/projects.js';
 	import { colorByPhase, iconBySubstance } from '../lib/projects.js';
 
 	// Debug.
@@ -17,8 +17,7 @@
 
 	// import L from 'leaflet';
 
-	let projects;
-	$: projects = $projectsStore.projects;
+	export let projects = [];
 
 	let map;
 	let markerSize = 48;
@@ -64,12 +63,12 @@
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" />
 </svelte:head> -->
 
-<button on:click={e => {eye = !eye}}>test eye</button>
+<!-- <button on:click={e => {eye = !eye}}>test eye</button> -->
 
 <Leaflet bind:map view={initialView} zoom={7}>
-	<Control position="topright">
+	<!-- <Control position="topright">
 		<MapToolbar bind:eye bind:lines={showLines} on:click-reset={resetMapView} />
-	</Control>
+	</Control> -->
 
 	{#if eye}
 		{#each projects as project}

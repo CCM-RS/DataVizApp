@@ -6,7 +6,7 @@
     onDestroy,
   } from 'svelte';
 
-  import L from 'leaflet';
+  // import L from 'leaflet';
 	import flush from 'just-flush';
 
   export let latLngs;
@@ -31,6 +31,7 @@
 
 	let layerPane = pane || getContext('pane');
 	let layerGroup = getContext('layerGroup')();
+	const L = getContext('L')();
 
 	// Invert long, lat.
 	const invertLongLat = ll => {

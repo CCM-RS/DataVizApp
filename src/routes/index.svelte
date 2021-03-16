@@ -3,19 +3,12 @@
 </script>
 
 <script>
-	// Workaround : a dependency is using a direct reference to window.
-	// import Map from "../components/Map.svelte";
+	import Map from "../components/Map.svelte";
+	import ProjectsFilters from "../components/ProjectsFilters.svelte";
 	import { getContext } from 'svelte';
-	import { onMount } from 'svelte';
 	import { projectsStore } from '../stores/projects.js';
 
 	const global_data = getContext('global_data');
-
-	// Workaround : a dependency is using a direct reference to window.
-	let mounted = false;
-	onMount(async ()=>{
-		mounted = true;
-	})
 </script>
 
 <svelte:head>
@@ -29,22 +22,34 @@
 	<!-- <meta name="twitter:image:alt" content="{ homepage.image_alt ? homepage.image_alt : global_data.site_name }"> -->
 </svelte:head>
 
-<h1>{ homepage.title }</h1>
-
-<div class="content-wrap">
-	<p>Projetos selecionados : <strong>{ $projectsStore.projects.length }</strong></p>
-</div>
+<header class="content-wrap content-wrap--l">
+	<div class="info">
+		<h1>{ homepage.title }</h1>
+	</div>
+	<div class="filters">
+		<ProjectsFilters />
+	</div>
+</header>
 
 <div class="map-wrap">
-	<!-- Workaround : a dependency is using a direct reference to window. -->
-	{#if mounted}
-		{#await import("../components/Map.svelte") then m}
-			<svelte:component this="{m.default}" />
-		{/await}
-	{/if}
+	<Map projects={$projectsStore} />
 </div>
 
 <style>
+	header {
+		display: flex;
+		justify-content: center;
+	}
+	.info,
+	.filters {
+		flex-grow: 1;
+		width: 100%;
+		padding: var(--space) var(--space-s);
+	}
+	.filters {
+		position: relative;
+		z-index: 2;
+	}
 	h1 {
 		margin: 0;
 		padding: .33rem .4rem .25rem .4rem;
@@ -52,14 +57,14 @@
 	}
 	.map-wrap {
 		position: relative;
-		margin-top: 1rem;
 		flex-grow: 1;
+		z-index: 1;
 	}
-	:global(.map-wrap > *) {
+	/* :global(.map-wrap > *) {
 		position: absolute !important;
 		top: 0;
 		right: 0;
 		bottom: 0;
 		left: 0;
-	}
+	} */
 </style>

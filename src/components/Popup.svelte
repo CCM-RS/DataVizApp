@@ -1,12 +1,17 @@
 <script>
-  import L from 'leaflet';
+  // import L from 'leaflet';
   import { getContext } from 'svelte';
-  let classNames = undefined;
-  export { classNames as class };
+
+	let classNames = undefined;
+
+	export { classNames as class };
   export let popup = undefined;
-  let showContents = false;
+
+	let showContents = false;
   let popupOpen = false;
+
   const layer = getContext('layer')();
+	const L = getContext('L')();
 
 	function createPopup(popupElement) {
     popup = L.popup().setContent(popupElement);
