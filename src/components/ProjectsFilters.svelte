@@ -1,4 +1,5 @@
 <script>
+	import slugify from '@sindresorhus/slugify';
 	import Select from 'svelte-select';
 	import { projectsStore } from '../stores/projects.js';
 	import { initialProjects } from '../stores/projects.js';
@@ -24,10 +25,15 @@
 						if (!val.length) {
 							return;
 						}
+
+						const slug = slugify(val, { separator: ' ' });
+
 						selectItems.push({
 							key,
 							value: val,
-							label: `${val} <span style="color:grey">(${key})</span>`
+
+							// Add slugified value for "fuzzier" matching in label.
+							label: `${val} <span style="color:grey">(${key})</span><span style="display:none">${slug}</span>`
 						});
 					});
 				}
@@ -42,6 +48,9 @@
 
 		// Sort alphabetically (using translitteration).
 		dedup.sort((a, b) => a.value.localeCompare(b.value));
+
+		// Debug.
+		// console.log(dedup.map(i => i.value));
 
 		return dedup;
 	};

@@ -5,8 +5,8 @@
 
 const { updateKmzData } = require('./lib/kmz_process.js');
 
-// updateKmzData();
-updateKmzData('highlights');
+updateKmzData();
+// updateKmzData('highlights');
 
 
 /*

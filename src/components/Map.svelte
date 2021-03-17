@@ -9,13 +9,8 @@
 	import Polyline from './Polyline.svelte';
 	// import MapToolbar from './MapToolbar.svelte';
 
-	// import { projectsStore } from '../stores/projects.js';
+	import { projectsStore } from '../stores/projects.js';
 	import { colorByPhase, iconBySubstance } from '../lib/projects.js';
-
-	// Debug.
-	// import GeoJson from './GeoJson.svelte';
-
-	// import L from 'leaflet';
 
 	export let projects = [];
 
@@ -55,7 +50,7 @@
 </script>
 
 <!-- Debug. -->
-<!-- <pre>Map.svelte : projects = {JSON.stringify(projects, null, 2)}</pre> -->
+<!-- <pre>Map.svelte : projects = {JSON.stringify(projects.map(i => i.municipality), null, 2)}</pre> -->
 
 <svelte:window on:resize={resizeMap} />
 
@@ -71,7 +66,7 @@
 	</Control> -->
 
 	<!-- {#if eye} -->
-		{#each projects as project}
+		{#each $projectsStore as project}
 			<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true}>
 				<Popup>
 					<dl>
@@ -100,7 +95,7 @@
 	<!-- {/if} -->
 
 	<!-- {#if showLines} -->
-		{#each projects as project}
+		{#each $projectsStore as project}
 			<Marker latLng={project.geometry.centerPoint} width={markerSize} height={markerSize}>
 				<img src="{iconBySubstance(project)}" alt="{project.substancia}" style="width:{markerSize}px;height:{markerSize}px">
 				<Popup>

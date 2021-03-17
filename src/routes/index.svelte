@@ -6,7 +6,6 @@
 	import Map from "../components/Map.svelte";
 	import ProjectsFilters from "../components/ProjectsFilters.svelte";
 	import { getContext } from 'svelte';
-	import { projectsStore } from '../stores/projects.js';
 
 	const global_data = getContext('global_data');
 </script>
@@ -32,7 +31,7 @@
 </header>
 
 <div class="map-wrap">
-	<Map projects={$projectsStore} />
+	<Map />
 </div>
 
 <style>
@@ -42,18 +41,18 @@
 	}
 	.info,
 	.filters {
-		flex-grow: 1;
-		width: 100%;
 		padding: var(--space) var(--space-s);
 	}
 	.filters {
 		position: relative;
 		z-index: 2;
+		flex-grow: 1;
 	}
 	h1 {
 		margin: 0;
 		padding: .33rem .4rem .25rem .4rem;
 		font-size: 1rem;
+		width: 33ch;
 	}
 	.map-wrap {
 		position: relative;
