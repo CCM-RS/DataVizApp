@@ -441,6 +441,8 @@ const arrangeBySubstance = projects => {
 
 /**
  * Extracts structured data from the GeoJson object.
+ *
+ * Update : only extract highlights for now.
  */
 const extractGeoJsonData = async (converted, outputCacheDir) => {
 	// Defaults.
@@ -478,37 +480,37 @@ const extractGeoJsonData = async (converted, outputCacheDir) => {
 	projects.sort((a, b) => b.modified.localeCompare(a.modified));
 
 	// Write 1 file per municipality.
-	const projectsByMunicipality = arrangeByMunicipality(projects);
-	Object.keys(projectsByMunicipality).forEach(cleanKey => {
-		promises.push(
-			write_file(
-				`${outputCacheDir}/by-municipality/${cleanKey}.json`,
-				JSON.stringify({ projects: projectsByMunicipality[cleanKey] })
-			)
-		);
-	});
+	// const projectsByMunicipality = arrangeByMunicipality(projects);
+	// Object.keys(projectsByMunicipality).forEach(cleanKey => {
+	// 	promises.push(
+	// 		write_file(
+	// 			`${outputCacheDir}/by-municipality/${cleanKey}.json`,
+	// 			JSON.stringify({ projects: projectsByMunicipality[cleanKey] })
+	// 		)
+	// 	);
+	// });
 
 	// Writes 1 file per phase.
-	const projectsByPhases = arrangeByPhases(projects);
-	Object.keys(projectsByPhases).forEach(cleanKey => {
-		promises.push(
-			write_file(
-				`${outputCacheDir}/by-phase/${cleanKey}.json`,
-				JSON.stringify({ projects: projectsByPhases[cleanKey] })
-			)
-		);
-	});
+	// const projectsByPhases = arrangeByPhases(projects);
+	// Object.keys(projectsByPhases).forEach(cleanKey => {
+	// 	promises.push(
+	// 		write_file(
+	// 			`${outputCacheDir}/by-phase/${cleanKey}.json`,
+	// 			JSON.stringify({ projects: projectsByPhases[cleanKey] })
+	// 		)
+	// 	);
+	// });
 
 	// Writes 1 file per substance.
-	const projectsBySubstance = arrangeBySubstance(projects);
-	Object.keys(projectsBySubstance).forEach(cleanKey => {
-		promises.push(
-			write_file(
-				`${outputCacheDir}/by-substance/${cleanKey}.json`,
-				JSON.stringify({ projects: projectsBySubstance[cleanKey] })
-			)
-		);
-	});
+	// const projectsBySubstance = arrangeBySubstance(projects);
+	// Object.keys(projectsBySubstance).forEach(cleanKey => {
+	// 	promises.push(
+	// 		write_file(
+	// 			`${outputCacheDir}/by-substance/${cleanKey}.json`,
+	// 			JSON.stringify({ projects: projectsBySubstance[cleanKey] })
+	// 		)
+	// 	);
+	// });
 
 	// Write the highlights. These are the projects shown by default on the
 	// homepage.
@@ -530,9 +532,9 @@ const extractGeoJsonData = async (converted, outputCacheDir) => {
 
 	// Write total parsed projects data (all projects ~ 11.6K unles debugCapItems
 	// setting is used).
-	promises.push(
-		write_file(`${outputCacheDir}/all-projects.json`, JSON.stringify({ projects }))
-	);
+	// promises.push(
+	// 	write_file(`${outputCacheDir}/all-projects.json`, JSON.stringify({ projects }))
+	// );
 
 	await Promise.all(promises);
 }
