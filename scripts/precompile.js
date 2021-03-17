@@ -3,9 +3,9 @@
  * for static site generation.
  */
 
-const { updateKmzData } = require('./lib/kmz_process.js');
+// const { updateKmzData } = require('./lib/kmz_process.js');
 
-updateKmzData();
+// updateKmzData();
 // updateKmzData('highlights');
 
 
