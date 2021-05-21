@@ -29,30 +29,7 @@
 
 <Leaflet bind:map view={initialView} zoom={7}>
 	{#each $projectsStore as project}
-		<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true}>
-			<Popup>
-				<dl>
-					<dt>Municipio</dt>
-					<dd>{project.municipality}</dd>
-					<dt>Modificado</dt>
-					<dd>{project.modified}</dd>
-					<dt>Fase</dt>
-					<dd>{project.fase}</dd>
-					<dt>Area (ha)</dt>
-					<dd>{project.area_ha}</dd>
-					<dt>Ultimo evento</dt>
-					<dd>{project.ultimo_evento}</dd>
-					<dt>Titular</dt>
-					<dd>{project.titular}</dd>
-					<dt>Substancia</dt>
-					<dd>{project.substancia}</dd>
-					<dt>Uso</dt>
-					<dd>{project.uso}</dd>
-					<dt>Processo</dt>
-					<dd>{project.processo}</dd>
-				</dl>
-			</Popup>
-		</Polyline>
+		<Polyline latLngs={project.geometry.coordinates} color={colorByPhase(project)} fill={true} />
 		<Marker latLng={project.geometry.centerPoint} width={markerSize} height={markerSize}>
 			<img src="{iconBySubstance(project)}" alt="{project.substancia}" style="width:{markerSize}px;height:{markerSize}px">
 			<Popup>
