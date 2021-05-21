@@ -1,7 +1,6 @@
 <script>
 	import { colorByPhase } from '../lib/projects.js';
 	import { projectsStore } from '../stores/projects.js';
-	import { initialProjects } from '../stores/projects.js';
 	import ProjectsFilters from './ProjectsFilters.svelte';
 
 	// {"processo":"810265/2009","id":"{93500A54-5457-49C8-A8B2-D3A8E6585A4B}","numero":"810265","ano":"2009","area-ha":"1,97","fase":"LICENCIAMENTO","ultimo-evento":"742 - LICEN/PRORROGAÇÃO REGISTRO LICENÇA AUTORIZADA EM 21/09/2017","titular":"ANNA M. WALKER","substancia":"CASCALHO","uso":"Construção civil","uf":"RS"}
@@ -10,11 +9,9 @@
 </script>
 
 <!-- DEBUG -->
-<!-- <pre>Projects.svelte : initialProjects = {JSON.stringify(initialProjects, null, 2)}</pre> -->
 <!-- <pre>Projects.svelte : $projectsStore = {JSON.stringify($projectsStore, null, 2)}</pre> -->
 <!-- <pre>Projects.svelte : filterOp = {JSON.stringify(filterOp, null, 2)}</pre> -->
-<!-- <pre>Projects.svelte : $projectsStore.length = {$projectsStore.length}</pre>
-<pre>Projects.svelte : initialProjects.length = {initialProjects.length}</pre> -->
+<!-- <pre>Projects.svelte : $projectsStore.length = {$projectsStore.length}</pre> -->
 
 <div class="filters">
 	<ProjectsFilters bind:sortBy />
@@ -133,8 +130,6 @@
 	:global(table .sort.is-desc .is-asc) {
 		display: none;
 	}
-	/* th:hover,
-	th:focus, */
 	:global(table th.is-active) {
 		background-color: cornflowerblue;
 		color: white;

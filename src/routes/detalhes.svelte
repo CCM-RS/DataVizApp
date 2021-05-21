@@ -13,6 +13,7 @@
 
 <div class="content-wrap">
 	<h1>Detalhes dos projetos</h1>
+	<a href="/">→ Ver no 🗺️ mapa</a>
 </div>
 
 <div class="projects-list">
@@ -20,6 +21,9 @@
 </div>
 
 <style>
+	a {
+		text-decoration: none;
+	}
 	.projects-list {
 		flex-grow: 1;
 	}
